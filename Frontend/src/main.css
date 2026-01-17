@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Navigation links */
+.nav-link {
+  @apply text-gray-600 font-medium hover:text-blue-600 transition;
+}
+
+/* Primary button */
+.btn-primary {
+  @apply bg-blue-600 text-white px-5 py-2 rounded-lg
+         font-medium shadow-sm
+         hover:bg-blue-700 hover:shadow-md
+         transition;
+}
