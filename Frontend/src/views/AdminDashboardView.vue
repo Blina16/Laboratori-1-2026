@@ -195,16 +195,16 @@ const stats = computed(() => {
   const allTutors = tutorsStore.getAllTutors || []
   const allStudents = studentsStore.getAllStudents || []
   const allCourses = coursesStore.getAllCourses || []
-  
+
   // Calculate total sessions (can be enhanced with actual session data)
   const totalSessions = 12 // Placeholder
-  
+
   // Calculate upcoming sessions
   const upcomingSessions = 2 // Placeholder
-  
+
   // Calculate completion rate
   const completionRate = 95 // Placeholder
-  
+
   return {
     totalSessions,
     activeTutors: allTutors.length,
