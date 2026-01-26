@@ -199,6 +199,15 @@
         </div>
       </div>
     </div>
+
+    <!-- Booking Modal -->
+    <BookingModal
+      v-if="showBookingModal"
+      :tutor="selectedTutor"
+      :student-id="parseInt(user.value.id)"
+      @close="closeBookingModal"
+      @booked="handleBookingSuccess"
+    />
   </div>
 </template>
 

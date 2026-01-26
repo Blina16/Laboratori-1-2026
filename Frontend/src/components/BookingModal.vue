@@ -70,23 +70,12 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">
               Select Time <span class="text-red-500">*</span>
             </label>
-            <select
+            <input
               v-model="form.time"
+              type="time"
               required
-              :disabled="loadingSlots || availableSlots.length === 0"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:opacity-50"
-            >
-              <option value="">
-                {{ loadingSlots ? 'Loading available times...' : (availableSlots.length === 0 ? 'No available slots' : 'Select a time') }}
-              </option>
-              <option v-for="slot in availableSlots" :key="slot.id" :value="slot.start_time">
-                {{ formatTime(slot.start_time) }} - {{ formatTime(slot.end_time) }}
-                <span v-if="slot.max_students > 1">({{ slot.max_students - slot.current_students }} spots left)</span>
-              </option>
-            </select>
-            <p v-if="!loadingSlots && availableSlots.length === 0" class="text-sm text-gray-500 mt-1">
-              This tutor has no available time slots for the selected date.
-            </p>
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            />
           </div>
 
           <!-- Duration -->
@@ -179,7 +168,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import api from '@/services/api'
 
 const props = defineProps({
@@ -204,8 +193,6 @@ const form = ref({
 })
 
 const isSubmitting = ref(false)
-const loadingSlots = ref(false)
-const availableSlots = ref([])
 
 // Set minimum date to today
 const minDate = computed(() => {
@@ -219,92 +206,32 @@ const calculateTotal = () => {
   return (hourlyRate * hours).toFixed(2)
 }
 
-const formatTime = (time) => {
-  const [hours, minutes] = time.split(':')
-  const hour = parseInt(hours)
-  const ampm = hour >= 12 ? 'PM' : 'AM'
-  const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour)
-  return `${displayHour}:${minutes} ${ampm}`
-}
-
-// Fetch available slots when date changes
-const fetchAvailableSlots = async () => {
-  if (!form.value.date || !props.tutor.id) {
-    availableSlots.value = []
-    return
-  }
-
-  loadingSlots.value = true
-  try {
-    // TODO: Replace with actual API call when availability endpoint is ready
-    // const response = await api.get(`/api/availability/${props.tutor.id}?date=${form.value.date}`)
-    // availableSlots.value = response.data.filter(slot => slot.current_students < slot.max_students)
-    
-    // Mock data for now
-    await new Promise(resolve => setTimeout(resolve, 500))
-    availableSlots.value = [
-      {
-        id: 1,
-        start_time: '09:00',
-        end_time: '10:00',
-        max_students: 2,
-        current_students: 0
-      },
-      {
-        id: 2,
-        start_time: '14:00',
-        end_time: '15:00',
-        max_students: 1,
-        current_students: 0
-      },
-      {
-        id: 3,
-        start_time: '16:00',
-        end_time: '17:00',
-        max_students: 3,
-        current_students: 1
-      }
-    ]
-  } catch (error) {
-    console.error('Failed to fetch available slots:', error)
-    availableSlots.value = []
-  } finally {
-    loadingSlots.value = false
-  }
-}
-
-// Watch for date changes
-watch(() => form.value.date, () => {
-  form.value.time = '' // Reset time when date changes
-  fetchAvailableSlots()
-})
-
 const handleSubmit = async () => {
   isSubmitting.value = true
   
   try {
-    // Find the selected slot
-    const selectedSlot = availableSlots.value.find(slot => slot.start_time === form.value.time)
-    
     const bookingData = {
-      availability_id: selectedSlot?.id,
       teacher_id: props.tutor.id,
       student_id: props.studentId,
-      scheduled_at: new Date(`${form.value.date}T${form.value.time}:00`).toISOString(),
+      scheduled_at: `${form.value.date}T${form.value.time}:00`,
+      course_title: form.value.subject || `${props.tutor.subject} Tutoring`,
       duration: form.value.duration,
-      subject: form.value.subject,
-      notes: form.value.notes,
-      status: 'scheduled',
-      price: calculateTotal()
+      price: parseFloat(calculateTotal()),
+      notes: form.value.notes
     }
     
-    // TODO: Replace with actual API call when booking endpoint is ready
-    console.log('Booking session:', bookingData)
+    console.log('Creating direct booking:', bookingData)
     
-    // For now, simulate successful booking
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Make actual API call to create session
+    const response = await api.post('/sessions', bookingData)
     
-    emit('booked', bookingData)
+    console.log('Booking successful:', response.data)
+    
+    emit('booked', {
+      ...bookingData,
+      teacher_name: props.tutor.name,
+      sessionId: response.data.sessionId
+    })
     emit('close')
     
     // Reset form
@@ -317,7 +244,7 @@ const handleSubmit = async () => {
     }
   } catch (error) {
     console.error('Failed to book session:', error)
-    alert('Failed to book session. Please try again.')
+    alert('Failed to book session: ' + (error.response?.data?.error || error.message))
   } finally {
     isSubmitting.value = false
   }

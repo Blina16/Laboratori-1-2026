@@ -22,12 +22,11 @@ app.get("/api/tutors", async (req, res) => {
         tp.subject,
         tp.bio,
         tp.price_per_hour,
-        tp.experience,
-        tp.rating
+        tp.experience
       FROM users u
       LEFT JOIN teacher_profiles tp ON u.id = tp.user_id
       WHERE u.role = 'teacher'
-      ORDER BY tp.rating DESC, u.name
+      ORDER BY u.name
     `;
     
     const [rows] = await db.execute(query);
@@ -40,8 +39,8 @@ app.get("/api/tutors", async (req, res) => {
       subject: row.subject || 'Multiple Subjects',
       bio: row.bio || 'Experienced tutor passionate about helping students succeed',
       price_per_hour: row.price_per_hour || 50,
-      experience: row.experience || '5+ years',
-      rating: row.rating || 4.5,
+      experience: row.experience || 0,
+      rating: 4.5, // Default rating since no rating column
       available: true, // Teachers are always available
       status: 'Available for booking'
     }));
@@ -59,7 +58,7 @@ app.get("/api/tutors", async (req, res) => {
         subject: 'Mathematics',
         bio: 'Experienced math tutor with 10+ years of teaching experience. Specialized in algebra, calculus, and statistics.',
         price_per_hour: 50,
-        experience: '10+ years',
+        experience: 10,
         email: 'john.smith@example.com',
         rating: 4.8,
         available: true,
@@ -154,18 +153,18 @@ app.post("/api/sessions", async (req, res) => {
     // Create the session directly - no availability slot needed
     const sessionQuery = `
       INSERT INTO sessions 
-      (teacher_id, student_id, scheduled_at, course_title, duration, price, status, notes)
-      VALUES (?, ?, ?, ?, ?, ?, 'scheduled', ?)
+      (teacher_id, student_id, scheduled_at, title, description, duration, price, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'scheduled')
     `;
     
     const [sessionResult] = await db.execute(sessionQuery, [
       teacher_id,
       student_id,
       scheduled_at,
-      course_title,
+      course_title || 'Tutoring Session',
+      notes || null,
       duration,
-      price,
-      notes || null
+      price
     ]);
     
     res.json({ 
