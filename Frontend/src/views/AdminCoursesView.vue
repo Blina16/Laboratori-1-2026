@@ -192,9 +192,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useCoursesStore } from '../stores/courses'
-import { useTutorsStore } from '../stores/tutors'
+import { ref, onMounted } from 'vue'
+import api from '../services/api'
 import CourseModal from '../components/CourseModal.vue'
 import AdminSidebar from '../components/AdminSidebar.vue'
 
@@ -202,15 +201,48 @@ defineOptions({
   name: 'AdminCoursesView'
 })
 
-const coursesStore = useCoursesStore()
-const tutorsStore = useTutorsStore()
 const showModal = ref(false)
 const showDeleteModal = ref(false)
 const selectedCourse = ref(null)
 const courseToDelete = ref(null)
 
-const courses = computed(() => coursesStore.getAllCourses)
-const tutors = computed(() => tutorsStore.getAllTutors)
+const courses = ref([])
+const tutors = ref([])
+
+const fetchCourses = async () => {
+  try {
+    const res = await api.get('/courses')
+    courses.value = (res.data || []).map(c => ({
+      id: c.id,
+      name: c.name,
+      description: c.description || '',
+      duration: c.duration || '',
+      level: c.level || '',
+      price: typeof c.price === 'number' ? c.price : (c.price ? Number(c.price) : 0),
+      tutor: c.tutor_name || '',
+      teacher_id: c.assigned_tutor_id,
+      students: c.students || []
+    }))
+  } catch (error) {
+    console.error('Failed to fetch courses:', error)
+  }
+}
+
+const fetchTutors = async () => {
+  try {
+    const res = await api.get('/users/teachers')
+    tutors.value = (res.data || []).map(t => ({
+      ...t,
+      surname: t.surname || ''
+    }))
+  } catch (error) {
+    console.error('Failed to fetch tutors:', error)
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([fetchCourses(), fetchTutors()])
+})
 
 const openAddModal = () => {
   selectedCourse.value = null
@@ -227,15 +259,29 @@ const closeModal = () => {
   selectedCourse.value = null
 }
 
-const handleSave = (courseData) => {
-  if (selectedCourse.value && selectedCourse.value.id) {
-    // Update existing course
-    coursesStore.updateCourse(selectedCourse.value.id, courseData)
-  } else {
-    // Add new course
-    coursesStore.addCourse(courseData)
+const handleSave = async (courseData) => {
+  try {
+    const payload = {
+      name: courseData.title ?? courseData.name,
+      description: courseData.description,
+      duration: courseData.duration,
+      level: courseData.level,
+      price: courseData.price,
+      assigned_tutor_id: courseData.teacher_id ?? courseData.teacherId
+    }
+
+    if (selectedCourse.value && selectedCourse.value.id) {
+      await api.put(`/courses/${selectedCourse.value.id}`, payload)
+    } else {
+      await api.post('/courses', payload)
+    }
+
+    await fetchCourses()
+    closeModal()
+  } catch (error) {
+    console.error('Failed to save course:', error)
+    alert('Failed to save course')
   }
-  closeModal()
 }
 
 const confirmDelete = (course) => {
@@ -243,11 +289,17 @@ const confirmDelete = (course) => {
   showDeleteModal.value = true
 }
 
-const handleDelete = () => {
-  if (courseToDelete.value) {
-    coursesStore.deleteCourse(courseToDelete.value.id)
+const handleDelete = async () => {
+  if (!courseToDelete.value) return
+
+  try {
+    await api.delete(`/courses/${courseToDelete.value.id}`)
+    await fetchCourses()
     showDeleteModal.value = false
     courseToDelete.value = null
+  } catch (error) {
+    console.error('Failed to delete course:', error)
+    alert('Failed to delete course')
   }
 }
 </script>

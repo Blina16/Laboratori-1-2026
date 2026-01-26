@@ -91,11 +91,15 @@ const handleLogin = async () => {
     // Redirect based on role
     if (user.role === 'admin') {
       router.push('/admin/dashboard')
+    } else if (user.role === 'teacher') {
+      router.push('/teacher/availability')
+    } else if (user.role === 'student') {
+      router.push('/student/dashboard')
     } else {
       router.push('/dashboard')
     }
 
-  } catch (err) {
+  } catch {
     alert('Invalid email or password')
   } finally {
     isLoading.value = false

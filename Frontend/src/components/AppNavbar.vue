@@ -27,6 +27,13 @@
             Home
           </router-link>
           <router-link
+            to="/tutoring"
+            class="nav-link"
+            active-class="text-blue-600 font-semibold"
+          >
+            Find Tutor
+          </router-link>
+          <router-link
             to="/tutors"
             class="nav-link"
             active-class="text-blue-600 font-semibold"
@@ -49,6 +56,13 @@
           </router-link>
           <router-link
             to="/admin/dashboard"
+            class="nav-link text-purple-600 hover:text-purple-700"
+            active-class="text-purple-600 font-semibold"
+          >
+            Dashboard
+          </router-link>
+          <router-link
+            to="/admin"
             class="nav-link text-purple-600 hover:text-purple-700"
             active-class="text-purple-600 font-semibold"
           >
@@ -131,6 +145,14 @@
             Home
           </router-link>
           <router-link
+            to="/tutoring"
+            @click="mobileMenuOpen = false"
+            class="block px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
+            active-class="text-blue-600 font-semibold bg-blue-50"
+          >
+            Find Tutor
+          </router-link>
+          <router-link
             to="/tutors"
             @click="mobileMenuOpen = false"
             class="block px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
@@ -156,6 +178,14 @@
           </router-link>
           <router-link
             to="/admin/dashboard"
+            @click="mobileMenuOpen = false"
+            class="block px-4 py-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
+            active-class="text-purple-600 font-semibold bg-purple-50"
+          >
+            Dashboard
+          </router-link>
+          <router-link
+            to="/admin"
             @click="mobileMenuOpen = false"
             class="block px-4 py-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
             active-class="text-purple-600 font-semibold bg-purple-50"

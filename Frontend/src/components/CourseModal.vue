@@ -199,36 +199,24 @@ const emit = defineEmits(['close', 'save'])
 const isEditMode = computed(() => !!props.course)
 
 const form = ref({
-  name: '',
+  title: '',
   description: '',
-  duration: '',
-  level: '',
-  price: 0,
-  tutor: '',
-  students: []
+  teacher_id: ''
 })
 
 // Initialize form when course prop changes
 watch(() => props.course, (newCourse) => {
   if (newCourse) {
     form.value = {
-      name: newCourse.name || '',
+      title: newCourse.title || newCourse.name || '',
       description: newCourse.description || '',
-      duration: newCourse.duration || '',
-      level: newCourse.level || '',
-      price: newCourse.price || 0,
-      tutor: newCourse.tutor || '',
-      students: newCourse.students ? [...newCourse.students] : []
+      teacher_id: newCourse.teacher_id || ''
     }
   } else {
     form.value = {
-      name: '',
+      title: '',
       description: '',
-      duration: '',
-      level: '',
-      price: 0,
-      tutor: '',
-      students: []
+      teacher_id: ''
     }
   }
 }, { immediate: true })
@@ -242,15 +230,10 @@ const removeStudent = (index) => {
 }
 
 const handleSubmit = () => {
-  // Filter out empty students
   const courseData = {
-    name: form.value.name.trim(),
+    title: form.value.title.trim(),
     description: form.value.description.trim(),
-    duration: form.value.duration.trim(),
-    level: form.value.level.trim(),
-    price: form.value.price || 0,
-    tutor: form.value.tutor.trim(),
-    students: form.value.students.filter(s => s.trim() !== '')
+    teacher_id: form.value.teacher_id ? Number(form.value.teacher_id) : null
   }
   
   emit('save', courseData)

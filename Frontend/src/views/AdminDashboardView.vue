@@ -5,11 +5,22 @@
       <div class="min-h-[calc(100vh-4rem)] bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <!-- Welcome Header -->
-          <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {{ user.name || 'Admin' }}!
-            </h1>
-            <p class="text-gray-600">Here's an overview of your account</p>
+          <div class="mb-8 flex justify-between items-start">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                Welcome back, {{ user.name || 'Admin' }}!
+              </h1>
+              <p class="text-gray-600">Here's an overview of your account</p>
+            </div>
+            <button
+              @click="handleLogout"
+              class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Logout
+            </button>
           </div>
 
           <!-- Stats Grid -->
@@ -171,67 +182,96 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useTutorsStore } from '../stores/tutors'
-import { useStudentsStore } from '../stores/students'
-import { useCoursesStore } from '../stores/courses'
-import AdminSidebar from '../components/AdminSidebar.vue'
+import { ref, computed, onMounted } from 'vue'
+import api from '@/services/api'
+import { logout } from '@/utils/auth'
 
 defineOptions({
   name: 'AdminDashboardView'
 })
 
-const tutorsStore = useTutorsStore()
-const studentsStore = useStudentsStore()
-const coursesStore = useCoursesStore()
-
-// User data - in a real app, this would come from a store or API
-const user = ref({
-  name: localStorage.getItem('userName') || 'Admin',
-  email: localStorage.getItem('userEmail') || ''
+const user = ref({})
+const stats = ref({
+  totalSessions: 0,
+  activeTutors: 0,
+  upcomingSessions: 0,
+  completionRate: 0,
+  totalCourses: 0
 })
 
-const stats = computed(() => {
-  const allTutors = tutorsStore.getAllTutors || []
-  const allStudents = studentsStore.getAllStudents || []
-  const allCourses = coursesStore.getAllCourses || []
+const upcomingSessions = ref([])
+const recentUsers = ref([])
+const isLoading = ref(true)
 
-  // Calculate total sessions (can be enhanced with actual session data)
-  const totalSessions = 12 // Placeholder
+const handleLogout = () => {
+  logout()
+}
 
-  // Calculate upcoming sessions
-  const upcomingSessions = 2 // Placeholder
-
-  // Calculate completion rate
-  const completionRate = 95 // Placeholder
-
-  return {
-    totalSessions,
-    activeTutors: allTutors.length,
-    upcomingSessions,
-    completionRate,
-    totalCourses: allCourses.length
+const fetchAdminData = async () => {
+  try {
+    // Fetch all data in parallel
+    const [statsRes, sessionsRes, coursesRes, usersRes] = await Promise.all([
+      api.get('/api/users/stats'),
+      api.get('/api/sessions'),
+      api.get('/api/courses'),
+      api.get('/api/users/recent-users')
+    ])
+    
+    const userStats = statsRes.data
+    const sessions = sessionsRes.data
+    const courses = coursesRes.data
+    const users = usersRes.data
+    
+    // Calculate stats
+    const totalSessions = sessions.length
+    const upcomingSessions = sessions.filter(s => s.status === 'scheduled').length
+    const completedSessions = sessions.filter(s => s.status === 'completed').length
+    const completionRate = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0
+    
+    stats.value = {
+      totalSessions,
+      activeTutors: userStats.teachers,
+      upcomingSessions,
+      completionRate,
+      totalCourses: courses.length
+    }
+    
+    // Format upcoming sessions
+    upcomingSessions.value = sessions
+      .filter(s => s.status === 'scheduled')
+      .slice(0, 5)
+      .map(session => ({
+        id: session.id,
+        tutorName: session.teacher_name,
+        tutorInitials: session.teacher_name.split(' ').map(n => n[0]).join('').toUpperCase(),
+        subject: session.course_title || session.title || 'General Tutoring',
+        date: new Date(session.scheduled_at).toLocaleDateString(),
+        time: new Date(session.scheduled_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+      }))
+    
+    // Format recent users
+    recentUsers.value = users.slice(0, 5)
+    
+  } catch (error) {
+    console.error('Failed to fetch admin data:', error)
+    // Set default values on error
+    stats.value = {
+      totalSessions: 0,
+      activeTutors: 0,
+      upcomingSessions: 0,
+      completionRate: 0,
+      totalCourses: 0
+    }
+  } finally {
+    isLoading.value = false
   }
+}
+
+onMounted(() => {
+  const userData = localStorage.getItem('user')
+  if (userData) {
+    user.value = JSON.parse(userData)
+  }
+  fetchAdminData()
 })
-
-// Upcoming sessions data
-const upcomingSessions = ref([
-  {
-    id: 1,
-    tutorName: 'Dr. Sarah Johnson',
-    tutorInitials: 'SJ',
-    subject: 'Mathematics',
-    date: 'Tomorrow',
-    time: '2:00 PM'
-  },
-  {
-    id: 2,
-    tutorName: 'Prof. Michael Chen',
-    tutorInitials: 'MC',
-    subject: 'Physics',
-    date: 'Dec 25',
-    time: '10:00 AM'
-  }
-])
 </script>
-

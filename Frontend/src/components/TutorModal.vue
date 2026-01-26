@@ -51,6 +51,59 @@
           </div>
         </div>
 
+        <!-- Email -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+            Email <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="email"
+            v-model="form.email"
+            type="email"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+            placeholder="tutor@example.com"
+          />
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+            Password <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="password"
+            v-model="form.password"
+            type="password"
+            :required="!isEditMode"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+            :placeholder="isEditMode ? 'Leave blank to keep current' : 'Enter password'"
+          />
+        </div>
+
+        <!-- Subject -->
+        <div>
+          <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
+            Subject <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="subject"
+            v-model="form.subject"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+          >
+            <option value="">Select a subject</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Physics">Physics</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Biology">Biology</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="English">English</option>
+            <option value="History">History</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
         <!-- Experience -->
         <div>
           <label for="experience" class="block text-sm font-medium text-gray-700 mb-2">
@@ -67,44 +120,21 @@
           />
         </div>
 
-        <!-- Students -->
+        <!-- Price/Hour -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Students
+          <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
+            Price/Hour ($) <span class="text-red-500">*</span>
           </label>
-          <div class="space-y-2">
-            <div
-              v-for="(student, index) in form.students"
-              :key="index"
-              class="flex items-center gap-2"
-            >
-              <input
-                v-model="form.students[index]"
-                type="text"
-                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                :placeholder="`Student ${index + 1} name`"
-              />
-              <button
-                type="button"
-                @click="removeStudent(index)"
-                class="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <button
-              type="button"
-              @click="addStudent"
-              class="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition flex items-center justify-center gap-2"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Add Student
-            </button>
-          </div>
+          <input
+            id="price"
+            v-model.number="form.price"
+            type="number"
+            min="0"
+            step="0.01"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+            placeholder="50.00"
+          />
         </div>
 
         <!-- Courses -->
@@ -185,7 +215,10 @@ const isEditMode = computed(() => !!props.tutor)
 const form = ref({
   name: '',
   surname: '',
+  email: '',
+  subject: '',
   experience: 0,
+  price: 0,
   students: [],
   courses: []
 })
@@ -196,7 +229,11 @@ watch(() => props.tutor, (newTutor) => {
     form.value = {
       name: newTutor.name || '',
       surname: newTutor.surname || '',
+      email: newTutor.email || '',
+      password: '', // Don't pre-fill password for security
+      subject: newTutor.subject || '',
       experience: newTutor.experience || 0,
+      price: newTutor.price || 0,
       students: newTutor.students ? [...newTutor.students] : [],
       courses: newTutor.courses ? [...newTutor.courses] : []
     }
@@ -204,7 +241,11 @@ watch(() => props.tutor, (newTutor) => {
     form.value = {
       name: '',
       surname: '',
+      email: '',
+      password: '',
+      subject: '',
       experience: 0,
+      price: 0,
       students: [],
       courses: []
     }
@@ -228,15 +269,34 @@ const removeCourse = (index) => {
 }
 
 const handleSubmit = () => {
+  console.log('🔍 Form submission triggered');
+  console.log('📝 Form data:', form.value);
+  
+  // Check if required fields are filled
+  if (!form.value.name || !form.value.surname || !form.value.email || !form.value.subject || (!isEditMode && !form.value.password)) {
+    console.log('❌ Missing required fields');
+    alert('Please fill in all required fields (Name, Surname, Email, Password, Subject)');
+    return;
+  }
+  
   // Filter out empty students and courses
   const tutorData = {
     name: form.value.name.trim(),
     surname: form.value.surname.trim(),
+    email: form.value.email.trim(),
+    subject: form.value.subject,
     experience: form.value.experience,
+    price: form.value.price,
     students: form.value.students.filter(s => s.trim() !== ''),
     courses: form.value.courses.filter(c => c.trim() !== '')
   }
   
+  // Only include password for new tutors or when it's provided
+  if (form.value.password.trim()) {
+    tutorData.password = form.value.password.trim()
+  }
+  
+  console.log('✅ Emitting tutor data:', tutorData);
   emit('save', tutorData)
 }
 </script>

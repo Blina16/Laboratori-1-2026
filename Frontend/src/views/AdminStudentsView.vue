@@ -11,7 +11,7 @@
               <p class="text-gray-600">Manage students, their information, courses, and assigned tutors</p>
             </div>
             <button
-              @click="openAddModal"
+              @click="showModal = true; selectedStudent = null"
               class="btn-primary flex items-center gap-2"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,13 +31,13 @@
                       Name
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Age
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Location
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Contact
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Courses
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tutor
                     </th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
@@ -61,45 +61,23 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
                         <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
-                          {{ student.name.charAt(0) }}{{ student.surname.charAt(0) }}
+                          {{ student.name.charAt(0) }}{{ student.surname?.charAt(0) || '' }}
                         </div>
                         <div>
                           <div class="text-sm font-medium text-gray-900">
-                            {{ student.name }} {{ student.surname }}
+                            {{ student.name }} {{ student.surname || '' }}
                           </div>
                         </div>
                       </div>
                     </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">{{ student.age || 'N/A' }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="text-sm text-gray-900">{{ student.location || 'N/A' }}</div>
+                    </td>
                     <td class="px-6 py-4">
                       <div class="text-sm text-gray-900">{{ student.email }}</div>
-                      <div v-if="student.phone" class="text-sm text-gray-500">{{ student.phone }}</div>
-                    </td>
-                    <td class="px-6 py-4">
-                      <div class="flex flex-wrap gap-1">
-                        <span
-                          v-for="(course, index) in student.courses.slice(0, 3)"
-                          :key="index"
-                          class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800"
-                        >
-                          {{ course }}
-                        </span>
-                        <span
-                          v-if="student.courses.length > 3"
-                          class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800"
-                        >
-                          +{{ student.courses.length - 3 }} more
-                        </span>
-                        <span
-                          v-if="student.courses.length === 0"
-                          class="text-sm text-gray-400"
-                        >
-                          No courses
-                        </span>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4">
-                      <span v-if="student.tutor" class="text-sm text-gray-900">{{ student.tutor }}</span>
-                      <span v-else class="text-sm text-gray-400">Not assigned</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
@@ -132,7 +110,7 @@
       @close="closeModal"
       @save="handleSave"
     />
-
+    
     <!-- Delete Confirmation Modal -->
     <div
       v-if="showDeleteModal"
@@ -164,9 +142,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useStudentsStore } from '../stores/students'
-import { useTutorsStore } from '../stores/tutors'
+import { ref, onMounted } from 'vue'
+import api from '../services/api'
 import StudentModal from '../components/StudentModal.vue'
 import AdminSidebar from '../components/AdminSidebar.vue'
 
@@ -174,15 +151,35 @@ defineOptions({
   name: 'AdminStudentsView'
 })
 
-const studentsStore = useStudentsStore()
-const tutorsStore = useTutorsStore()
+const students = ref([])
+const tutors = ref([])
 const showModal = ref(false)
 const showDeleteModal = ref(false)
 const selectedStudent = ref(null)
 const studentToDelete = ref(null)
 
-const students = computed(() => studentsStore.getAllStudents)
-const tutors = computed(() => tutorsStore.getAllTutors)
+const fetchStudents = async () => {
+  try {
+    const response = await api.get('/students')
+    students.value = response.data
+  } catch (error) {
+    console.error('Failed to fetch students:', error)
+  }
+}
+
+const fetchTutors = async () => {
+  try {
+    const response = await api.get('/tutors')
+    tutors.value = response.data
+  } catch (error) {
+    console.error('Failed to fetch tutors:', error)
+  }
+}
+
+onMounted(() => {
+  fetchStudents()
+  fetchTutors()
+})
 
 const openAddModal = () => {
   selectedStudent.value = null
@@ -199,15 +196,21 @@ const closeModal = () => {
   selectedStudent.value = null
 }
 
-const handleSave = (studentData) => {
-  if (selectedStudent.value && selectedStudent.value.id) {
-    // Update existing student
-    studentsStore.updateStudent(selectedStudent.value.id, studentData)
-  } else {
-    // Add new student
-    studentsStore.addStudent(studentData)
+const handleSave = async (studentData) => {
+  try {
+    if (selectedStudent.value && selectedStudent.value.id) {
+      // Update existing student
+      await api.put(`/students/${selectedStudent.value.id}`, studentData)
+    } else {
+      // Add new student
+      await api.post('/students', studentData)
+    }
+    await fetchStudents()
+    closeModal()
+  } catch (error) {
+    console.error('Failed to save student:', error)
+    alert('Failed to save student. Please try again.')
   }
-  closeModal()
 }
 
 const confirmDelete = (student) => {
@@ -215,11 +218,17 @@ const confirmDelete = (student) => {
   showDeleteModal.value = true
 }
 
-const handleDelete = () => {
-  if (studentToDelete.value) {
-    studentsStore.deleteStudent(studentToDelete.value.id)
-    showDeleteModal.value = false
-    studentToDelete.value = null
+const handleDelete = async () => {
+  try {
+    if (studentToDelete.value) {
+      await api.delete(`/students/${studentToDelete.value.id}`)
+      await fetchStudents()
+      showDeleteModal.value = false
+      studentToDelete.value = null
+    }
+  } catch (error) {
+    console.error('Failed to delete student:', error)
+    alert('Failed to delete student. Please try again.')
   }
 }
 </script>

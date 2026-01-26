@@ -20,9 +20,12 @@ export const requireAdmin = (to, from, next) => {
     return next("/login")
   }
 
-  // LINE 25–27: Logged in but NOT admin → student dashboard
+  // LINE 25–27: Logged in but NOT admin → redirect by role
   if (user?.role !== "admin") {
-    return next("/dashboard")
+    if (user?.role === "teacher") {
+      return next("/teacher/availability")
+    }
+    return next("/student/dashboard")
   }
 
   next()
@@ -37,8 +40,10 @@ export const requireGuest = (to, from, next) => {
   if (token && user) {
     if (user.role === "admin") {
       return next("/admin/dashboard")
+    } else if (user.role === "teacher") {
+      return next("/teacher/availability")
     }
-    return next("/dashboard")
+    return next("/student/dashboard")
   }
 
   // LINE 50: Not logged in → allow access

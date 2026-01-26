@@ -10,6 +10,12 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue'),
     },
     {
+      path: '/tutoring',
+      name: 'Tutoring',
+      component: () => import('../views/TutoringPage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/tutors',
       name: 'Tutors',
       component: () => import('../views/TutorsView.vue'),
@@ -31,14 +37,37 @@ const router = createRouter({
       meta: { requiresGuest: true },
     },
     {
-      path: '/signup',
-      name: 'SignUp',
-      component: () => import('../views/SignUpView.vue'),
+      path: '/admin-signup',
+      name: 'AdminSignUp',
+      component: () => import('../views/AdminSignUpView.vue'),
+      meta: { requiresGuest: true },
     },
     {
       path: '/dashboard',
-      name: 'Dashboard',
-      component: () => import('../views/DashboardView.vue'),
+      redirect: '/student/dashboard'
+    },
+        {
+      path: '/teacher/availability',
+      name: 'TeacherAvailability',
+      component: () => import('../views/TeacherAvailabilityView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/student/dashboard',
+      name: 'StudentDashboard',
+      component: () => import('../views/StudentDashboardView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/student/calendar',
+      name: 'StudentCalendar',
+      component: () => import('../views/StudentCalendarView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/student/tutors',
+      name: 'StudentTutors',
+      component: () => import('../views/StudentTutorsView.vue'),
       meta: { requiresAuth: true },
     },
     {
@@ -67,6 +96,12 @@ const router = createRouter({
       path: '/admin/courses',
       name: 'AdminCourses',
       component: () => import('../views/AdminCoursesView.vue'),
+      meta: { requiresAdmin: true },
+    },
+    {
+      path: '/admin/grades',
+      name: 'AdminGrades',
+      component: () => import('../views/AdminGradesView.vue'),
       meta: { requiresAdmin: true },
     },
   ],

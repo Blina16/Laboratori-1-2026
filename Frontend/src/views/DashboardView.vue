@@ -200,11 +200,7 @@ defineOptions({
 
 const router = useRouter()
 
-// User data - in a real app, this would come from a store or API
-const user = ref({
-  name: localStorage.getItem('userName') || '',
-  email: localStorage.getItem('userEmail') || ''
-})
+const user = ref(JSON.parse(localStorage.getItem('user') || '{}'))
 
 const stats = ref({
   totalSessions: 12,
@@ -245,8 +241,8 @@ const userInitials = computed(() => {
 })
 
 const handleLogout = () => {
-  localStorage.removeItem('userName')
-  localStorage.removeItem('userEmail')
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
   router.push('/login')
 }
 </script>

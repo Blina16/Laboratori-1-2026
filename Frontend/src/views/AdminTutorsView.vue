@@ -10,15 +10,25 @@
           <h1 class="text-3xl font-bold text-gray-900 mb-2">Tutor Management</h1>
           <p class="text-gray-600">Manage tutors, their experience, students, and courses</p>
         </div>
-        <button
-          @click="openAddModal"
-          class="btn-primary flex items-center gap-2"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Add Tutor
-        </button>
+        <div class="flex gap-2">
+          <button
+            @click="testAPI"
+            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition flex items-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+          </button>
+          <button
+            @click="openAddModal"
+            class="btn-primary flex items-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Tutor
+          </button>
+        </div>
       </div>
 
       <!-- Tutors Table -->
@@ -31,13 +41,16 @@
                   Name
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Subject
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Experience
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Students
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Courses
+                  Price/Hour
                 </th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -45,8 +58,14 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-if="tutors.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+              <tr v-if="isLoading">
+                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p>Loading tutors...</p>
+                </td>
+              </tr>
+              <tr v-else-if="tutors.length === 0">
+                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                   <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
@@ -61,63 +80,24 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
-                      {{ tutor.name.charAt(0) }}{{ tutor.surname.charAt(0) }}
+                      {{ tutor.name.charAt(0) }}{{ tutor.surname ? tutor.surname.charAt(0) : '' }}
                     </div>
                     <div>
                       <div class="text-sm font-medium text-gray-900">
-                        {{ tutor.name }} {{ tutor.surname }}
+                        {{ tutor.name }} {{ tutor.surname || '' }}
                       </div>
+                      <div class="text-xs text-gray-500">{{ tutor.email }}</div>
                     </div>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-900">{{ tutor.subject || 'Not specified' }}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
                   <span class="text-sm text-gray-900">{{ tutor.experience }} years</span>
                 </td>
-                <td class="px-6 py-4">
-                  <div class="flex flex-wrap gap-1">
-                    <span
-                      v-for="(student, index) in tutor.students.slice(0, 3)"
-                      :key="index"
-                      class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800"
-                    >
-                      {{ student }}
-                    </span>
-                    <span
-                      v-if="tutor.students.length > 3"
-                      class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800"
-                    >
-                      +{{ tutor.students.length - 3 }} more
-                    </span>
-                    <span
-                      v-if="tutor.students.length === 0"
-                      class="text-sm text-gray-400"
-                    >
-                      No students
-                    </span>
-                  </div>
-                </td>
-                <td class="px-6 py-4">
-                  <div class="flex flex-wrap gap-1">
-                    <span
-                      v-for="(course, index) in tutor.courses.slice(0, 3)"
-                      :key="index"
-                      class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800"
-                    >
-                      {{ course }}
-                    </span>
-                    <span
-                      v-if="tutor.courses.length > 3"
-                      class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800"
-                    >
-                      +{{ tutor.courses.length - 3 }} more
-                    </span>
-                    <span
-                      v-if="tutor.courses.length === 0"
-                      class="text-sm text-gray-400"
-                    >
-                      No courses
-                    </span>
-                  </div>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-semibold text-green-600">${{ tutor.price || 0 }}/hr</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
@@ -181,24 +161,66 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useTutorsStore } from '../stores/tutors'
-import TutorModal from '../components/TutorModal.vue'
+import { ref, onMounted } from 'vue'
+import api from '@/services/api'
 import AdminSidebar from '../components/AdminSidebar.vue'
+import TutorModal from '../components/TutorModal.vue'
 
 defineOptions({
   name: 'AdminTutorsView'
 })
 
-const tutorsStore = useTutorsStore()
+const tutors = ref([])
+const isLoading = ref(true)
 const showModal = ref(false)
 const showDeleteModal = ref(false)
 const selectedTutor = ref(null)
 const tutorToDelete = ref(null)
 
-const tutors = computed(() => tutorsStore.getAllTutors)
+const fetchTutors = async () => {
+  try {
+    const response = await api.get('/tutors')
+    tutors.value = response.data.map(teacher => ({
+      ...teacher,
+      // Add mock data for missing fields
+      surname: teacher.name.split(' ').slice(1).join('') || '',
+      email: teacher.email,
+      subject: teacher.subject || 'Not specified',
+      experience: teacher.experience || 0,
+      price: teacher.price_per_hour || 0,
+      students: [],
+      courses: []
+    }))
+  } catch (error) {
+    console.error('Failed to fetch tutors:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const testAPI = async () => {
+  console.log('🧪 Testing API connectivity...');
+
+  try {
+    // Test basic connectivity
+    console.log('1. Testing basic connectivity...');
+    const response = await api.get('/test');
+    console.log('✅ Basic connectivity test:', response.data);
+
+    // Test teachers endpoint
+    console.log('2. Testing teachers endpoint...');
+    const teachersResponse = await api.get('/tutors');
+    console.log('✅ Teachers endpoint test:', teachersResponse.data);
+
+    alert('✅ API is working! Check console for details.');
+  } catch (error) {
+    console.error('❌ API Test failed:', error);
+    alert('❌ API Test failed. Check console for details.');
+  }
+}
 
 const openAddModal = () => {
+  console.log('🔍 Opening Add Tutor modal');
   selectedTutor.value = null
   showModal.value = true
 }
@@ -213,15 +235,27 @@ const closeModal = () => {
   selectedTutor.value = null
 }
 
-const handleSave = (tutorData) => {
-  if (selectedTutor.value && selectedTutor.value.id) {
-    // Update existing tutor
-    tutorsStore.updateTutor(selectedTutor.value.id, tutorData)
-  } else {
-    // Add new tutor
-    tutorsStore.addTutor(tutorData)
+const handleSave = async (tutorData) => {
+  console.log('🔍 handleSave called with:', tutorData);
+
+  try {
+    if (selectedTutor.value && selectedTutor.value.id) {
+      // Update existing tutor
+      console.log('📝 Updating tutor:', selectedTutor.value.id);
+      const response = await api.put(`/tutors/${selectedTutor.value.id}`, tutorData)
+      console.log('✅ Update tutor response:', response.data)
+    } else {
+      // Add new tutor
+      console.log('📝 Adding new tutor');
+      const response = await api.post('/tutors', tutorData)
+      console.log('✅ Add tutor response:', response.data)
+    }
+    await fetchTutors() // Refresh list
+    closeModal()
+  } catch (error) {
+    console.error('❌ Failed to save tutor:', error.response?.data || error.message)
+    alert('Failed to save tutor: ' + (error.response?.data?.message || error.message))
   }
-  closeModal()
 }
 
 const confirmDelete = (tutor) => {
@@ -229,12 +263,23 @@ const confirmDelete = (tutor) => {
   showDeleteModal.value = true
 }
 
-const handleDelete = () => {
-  if (tutorToDelete.value) {
-    tutorsStore.deleteTutor(tutorToDelete.value.id)
-    showDeleteModal.value = false
-    tutorToDelete.value = null
+const handleDelete = async () => {
+  try {
+    if (tutorToDelete.value) {
+      // Delete tutor (you'd need to implement DELETE endpoint)
+      const response = await api.delete(`/tutors/${tutorToDelete.value.id}`)
+      console.log('Delete tutor:', response.data)
+      await fetchTutors() // Refresh list
+      showDeleteModal.value = false
+      tutorToDelete.value = null
+    }
+  } catch (error) {
+    console.error('Failed to delete tutor:', error)
   }
 }
+
+onMounted(() => {
+  fetchTutors()
+})
 </script>
 
