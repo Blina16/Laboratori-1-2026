@@ -39,7 +39,7 @@ export const requireGuest = (to, from, next) => {
   // LINE 38–47: Redirect logged-in users by role
   if (token && user) {
     if (user.role === "admin") {
-      return next("/admin/dashboard")
+      return next("/admin/tutors")
     } else if (user.role === "teacher") {
       return next("/teacher/availability")
     }
