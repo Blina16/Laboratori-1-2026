@@ -214,13 +214,13 @@ const fetchCourses = async () => {
     const res = await api.get('/courses')
     courses.value = (res.data || []).map(c => ({
       id: c.id,
-      name: c.name,
+      name: c.title || c.name,
       description: c.description || '',
       duration: c.duration || '',
       level: c.level || '',
       price: typeof c.price === 'number' ? c.price : (c.price ? Number(c.price) : 0),
       tutor: c.tutor_name || '',
-      teacher_id: c.assigned_tutor_id,
+      teacher_id: c.teacher_id,
       students: c.students || []
     }))
   } catch (error) {
@@ -262,12 +262,12 @@ const closeModal = () => {
 const handleSave = async (courseData) => {
   try {
     const payload = {
-      name: courseData.title ?? courseData.name,
+      title: courseData.title ?? courseData.name,
       description: courseData.description,
       duration: courseData.duration,
       level: courseData.level,
       price: courseData.price,
-      assigned_tutor_id: courseData.teacher_id ?? courseData.teacherId
+      teacher_id: courseData.teacher_id ?? courseData.teacherId ?? courseData.assigned_tutor_id
     }
 
     if (selectedCourse.value && selectedCourse.value.id) {
