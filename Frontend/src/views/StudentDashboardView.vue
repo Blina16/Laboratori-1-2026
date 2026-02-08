@@ -3,9 +3,9 @@
     <!-- Left Sidebar -->
     <div class="w-64 bg-white shadow-lg">
       <div class="p-6">
-        <h2 class="text-xl font-bold text-gray-900 mb-6">Navigation</h2>
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Menu</h2>
         <nav class="space-y-2">
-          <button 
+          <button
             @click="showTutors = true"
             :class="['w-full text-left px-4 py-3 rounded-lg transition', showTutors ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100']"
           >
@@ -19,13 +19,12 @@
         </nav>
       </div>
     </div>
-
     <!-- Main Content -->
     <div class="flex-1 relative">
       <!-- Favorites Menu (Corner) -->
       <div class="absolute top-4 right-4 z-40">
         <div class="relative">
-          <button 
+          <button
             @click="showFavorites = !showFavorites"
             class="bg-white rounded-lg shadow-lg p-3 hover:shadow-xl transition relative"
           >
@@ -36,7 +35,7 @@
               {{ favoriteTutors.length }}
             </span>
           </button>
-          
+
           <!-- Favorites Dropdown -->
           <div v-if="showFavorites" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-y-auto">
             <div class="p-4 border-b border-gray-200">
@@ -46,15 +45,15 @@
               No favorite tutors yet
             </div>
             <div v-else class="divide-y divide-gray-100">
-              <div 
-                v-for="tutor in favoriteTutors" 
+              <div
+                v-for="tutor in favoriteTutors"
                 :key="tutor.id"
                 @click="selectedTutor = tutor; showFavorites = false"
                 class="p-4 hover:bg-gray-50 cursor-pointer transition"
               >
                 <div class="flex items-center space-x-3">
-                  <img 
-                    :src="tutor.photo" 
+                  <img
+                    :src="tutor.photo"
                     :alt="tutor.name"
                     class="w-12 h-12 rounded-full object-cover"
                   >
@@ -63,7 +62,7 @@
                     <p class="text-sm text-gray-600">{{ tutor.specialty }}</p>
                     <p class="text-sm font-semibold text-blue-600">${{ tutor.cost }}/hour</p>
                   </div>
-                  <button 
+                  <button
                     @click.stop="toggleFavorite(tutor)"
                     class="text-red-500 hover:text-red-600"
                   >
@@ -82,7 +81,7 @@
         <!-- Tutors Section -->
         <div v-if="showTutors">
           <h1 class="text-3xl font-bold text-gray-900 mb-8">Available Tutors</h1>
-          
+
           <!-- Loading State -->
           <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div v-for="i in 6" :key="i" class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 animate-pulse">
@@ -107,18 +106,18 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Tutors Grid -->
           <div v-else-if="tutors.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div 
-              v-for="tutor in tutors" 
+            <div
+              v-for="tutor in tutors"
               :key="tutor.id"
               class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition"
             >
               <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center space-x-4">
-                  <img 
-                    :src="tutor.photo" 
+                  <img
+                    :src="tutor.photo"
                     :alt="tutor.name"
                     class="w-16 h-16 rounded-full object-cover"
                   >
@@ -127,7 +126,7 @@
                     <p class="text-sm text-gray-600">{{ tutor.specialty }}</p>
                   </div>
                 </div>
-                <button 
+                <button
                   @click="toggleFavorite(tutor)"
                   :class="['p-2 rounded-full transition', isFavorite(tutor) ? 'text-red-500 bg-red-50' : 'text-gray-400 hover:text-red-500']"
                 >
@@ -139,7 +138,7 @@
               <p class="text-gray-700 text-sm mb-4 line-clamp-3">{{ tutor.bio }}</p>
               <div class="flex items-center justify-between">
                 <span class="text-lg font-bold text-blue-600">${{ tutor.cost }}/hour</span>
-                <button 
+                <button
                   @click="selectedTutor = tutor"
                   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
                 >
@@ -148,7 +147,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- No Tutors State -->
           <div v-else class="text-center py-12">
             <div class="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
@@ -167,7 +166,7 @@
             <div class="p-6">
               <div class="flex justify-between items-start mb-6">
                 <h2 class="text-2xl font-bold text-gray-900">Tutor Profile</h2>
-                <button 
+                <button
                   @click="selectedTutor = null"
                   class="text-gray-400 hover:text-gray-600"
                 >
@@ -176,17 +175,17 @@
                   </svg>
                 </button>
               </div>
-              
+
               <div class="flex items-center space-x-6 mb-6">
-                <img 
-                  :src="selectedTutor.photo" 
+                <img
+                  :src="selectedTutor.photo"
                   :alt="selectedTutor.name"
                   class="w-24 h-24 rounded-full object-cover"
                 >
                 <div class="flex-1">
                   <div class="flex items-center space-x-3">
                     <h3 class="text-2xl font-bold text-gray-900">{{ selectedTutor.name }} {{ selectedTutor.surname }}</h3>
-                    <button 
+                    <button
                       @click="toggleFavorite(selectedTutor)"
                       :class="['p-2 rounded-full transition', isFavorite(selectedTutor) ? 'text-red-500 bg-red-50' : 'text-gray-400 hover:text-red-500']"
                     >
@@ -217,17 +216,17 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="mb-6">
                 <h4 class="text-lg font-semibold text-gray-900 mb-3">About</h4>
                 <p class="text-gray-700">{{ selectedTutor.bio }}</p>
               </div>
-              
+
               <div class="mb-6">
                 <h4 class="text-lg font-semibold text-gray-900 mb-3">Expertise</h4>
                 <div class="flex flex-wrap gap-2">
-                  <span 
-                    v-for="skill in selectedTutor.skills" 
+                  <span
+                    v-for="skill in selectedTutor.skills"
                     :key="skill"
                     class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
                   >
@@ -235,9 +234,9 @@
                   </span>
                 </div>
               </div>
-              
+
               <div class="flex space-x-4">
-                <button 
+                <button
                   @click="openBookingModal(selectedTutor)"
                   class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                 >
@@ -257,7 +256,7 @@
             <div class="p-6">
               <div class="flex justify-between items-start mb-6">
                 <h2 class="text-2xl font-bold text-gray-900">Book a Session</h2>
-                <button 
+                <button
                   @click="closeBookingModal"
                   class="text-gray-400 hover:text-gray-600"
                 >
@@ -266,11 +265,11 @@
                   </svg>
                 </button>
               </div>
-              
+
               <div class="mb-6">
                 <div class="flex items-center space-x-4 mb-6">
-                  <img 
-                    :src="bookingTutor.photo" 
+                  <img
+                    :src="bookingTutor.photo"
                     :alt="bookingTutor.name"
                     class="w-16 h-16 rounded-full object-cover"
                   >
@@ -280,40 +279,40 @@
                     <p class="text-lg font-bold text-blue-600">${{ bookingTutor.cost }}/hour</p>
                   </div>
                 </div>
-                
+
                 <div class="space-y-4">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                    <input 
+                    <input
                       v-model="bookingForm.subject"
-                      type="text" 
+                      type="text"
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="e.g., Mathematics, Physics, etc."
                     >
                   </div>
-                  
+
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                    <input 
+                    <input
                       v-model="bookingForm.date"
-                      type="date" 
+                      type="date"
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       :min="new Date().toISOString().split('T')[0]"
                     >
                   </div>
-                  
+
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
-                    <input 
+                    <input
                       v-model="bookingForm.time"
-                      type="time" 
+                      type="time"
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                   </div>
-                  
+
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
-                    <select 
+                    <select
                       v-model="bookingForm.duration"
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
@@ -323,10 +322,10 @@
                       <option value="120">2 hours</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Notes (optional)</label>
-                    <textarea 
+                    <textarea
                       v-model="bookingForm.notes"
                       rows="3"
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -334,7 +333,7 @@
                     ></textarea>
                   </div>
                 </div>
-                
+
                 <div class="mt-6 p-4 bg-gray-50 rounded-lg">
                   <div class="flex justify-between items-center">
                     <span class="text-gray-600">Estimated Cost:</span>
@@ -342,16 +341,16 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="flex space-x-4">
-                <button 
+                <button
                   @click="submitBooking"
                   :disabled="isSubmitting"
                   class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {{ isSubmitting ? 'Booking...' : 'Confirm Booking' }}
                 </button>
-                <button 
+                <button
                   @click="closeBookingModal"
                   class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
                 >
@@ -429,7 +428,7 @@ const fetchTutors = async () => {
   try {
     isLoading.value = true
     const response = await api.get('/tutors')
-    
+
     // Transform the data to match the frontend structure
     tutors.value = response.data.map(tutor => ({
       id: tutor.id,
@@ -445,7 +444,7 @@ const fetchTutors = async () => {
       total_sessions: tutor.total_sessions || 0,
       total_reviews: 0 // Default since backend doesn't provide it yet
     }))
-    
+
     console.log('Fetched tutors from admin panel:', tutors.value)
   } catch (error) {
     console.error('Error fetching tutors:', error)
@@ -494,22 +493,22 @@ const submitBooking = async () => {
   }
 
   isSubmitting.value = true
-  
+
   try {
     // Get current user from localStorage
     const userData = localStorage.getItem('user')
     if (!userData) {
       throw new Error('User not logged in')
     }
-    
+
     const user = JSON.parse(userData)
-    
+
     // Combine date and time - format properly for MySQL
     const scheduledDateTime = new Date(`${bookingForm.value.date}T${bookingForm.value.time}`)
-    
+
     // Format date for MySQL (YYYY-MM-DD HH:MM:SS)
     const mysqlDateTime = scheduledDateTime.toISOString().slice(0, 19).replace('T', ' ')
-    
+
     const bookingData = {
       student_id: user.id || 1,
       tutor_id: bookingTutor.value.id,
@@ -521,21 +520,21 @@ const submitBooking = async () => {
     }
 
     console.log('Sending booking data:', bookingData)
-    
+
     const response = await api.post('/bookings', bookingData)
     const result = response.data
-    
+
     console.log('Booking response:', result)
-    
+
     alert('Session booked successfully! 🎉')
     closeBookingModal()
-    
+
   } catch (error) {
     console.error('Booking error:', error)
-    
+
     // Show more detailed error message
     let errorMessage = 'Failed to book session. Please try again.'
-    
+
     if (error.response) {
       // Server responded with error
       errorMessage = error.response.data?.message || errorMessage
@@ -547,7 +546,7 @@ const submitBooking = async () => {
       // Other error
       errorMessage = error.message || errorMessage
     }
-    
+
     alert(errorMessage)
   } finally {
     isSubmitting.value = false
