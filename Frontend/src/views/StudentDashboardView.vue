@@ -27,10 +27,25 @@
       >
         Dashboard
       </button>
+
+      <!-- FAVORITES SECTION -->
+      <div v-if="favoritesList.length" class="mt-6">
+        <h3 class="text-md font-semibold mb-2">Favorites</h3>
+        <ul>
+          <li
+            v-for="tutor in favoritesList"
+            :key="tutor.id"
+            class="cursor-pointer text-blue-600 hover:underline mb-1"
+            @click="selectedTutor = tutor"
+          >
+            {{ tutor.name }} {{ tutor.surname }}
+          </li>
+        </ul>
+      </div>
     </aside>
 
     <!-- Main -->
-    <main class="flex-1 p-8">
+    <main class="flex-1 p-8 relative">
       <h1 class="text-3xl font-bold mb-6">
         Welcome back, {{ user?.name || 'Student' }} 👋
       </h1>
@@ -55,7 +70,7 @@
           <div
             v-for="tutor in filteredTutors"
             :key="tutor.id"
-            class="bg-white p-6 rounded-xl shadow"
+            class="bg-white p-6 rounded-xl shadow relative"
           >
             <img :src="tutor.photo" class="w-16 h-16 rounded-full mb-3" />
 
@@ -72,6 +87,15 @@
             <p class="text-sm mb-4 line-clamp-3">
               {{ tutor.bio }}
             </p>
+
+            <!-- Favorite Button -->
+            <button
+              @click.stop="toggleFavorite(tutor)"
+              class="absolute top-4 right-4 text-xl transition"
+              :class="favorites.has(tutor.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'"
+            >
+              {{ favorites.has(tutor.id) ? '❤️' : '🤍' }}
+            </button>
 
             <div class="flex justify-between items-center">
               <span class="font-bold text-blue-600">
@@ -121,6 +145,38 @@
         </div>
       </section>
 
+
+
+ <section v-if="activeTab === 'sessions'">
+        <h2 class="text-2xl font-bold mb-6">My Sessions</h2>
+
+        <div v-if="sessions.length === 0" class="text-gray-500">
+          You have no booked sessions yet.
+        </div>
+
+        <div class="space-y-4">
+          <div
+            v-for="s in sessions"
+            :key="s.id"
+            class="bg-white p-5 rounded-xl shadow flex justify-between"
+          >
+            <div>
+              <p class="font-bold">{{ s.subject }}</p>
+              <p class="text-sm text-gray-600">
+                {{ s.tutor }} — {{ s.date }} at {{ s.time }}
+              </p>
+            </div>
+            <span
+              class="px-3 py-1 rounded-full text-sm"
+              :class="s.status === 'Upcoming'
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-green-100 text-green-700'"
+            >
+              {{ s.status }}
+            </span>
+          </div>
+        </div>
+      </section>
       <!-- ================= DASHBOARD ================= -->
       <section v-if="activeTab === 'dashboard'">
         <h2 class="text-2xl font-bold mb-6">Dashboard Overview</h2>
@@ -205,6 +261,12 @@ const showBookingModal = ref(false)
 const bookingTutor = ref(null)
 const search = ref('')
 
+// Favorites state
+const favorites = ref(new Set(JSON.parse(localStorage.getItem('favorites')) || []))
+const favoritesList = computed(() =>
+  tutors.value.filter(t => favorites.value.has(t.id))
+)
+
 const bookingForm = ref({
   subject: '',
   date: '',
@@ -229,6 +291,7 @@ onMounted(async () => {
   isLoading.value = false
 })
 
+// Filter tutors by search
 const filteredTutors = computed(() =>
   tutors.value.filter(t =>
     t.name.toLowerCase().includes(search.value.toLowerCase()) ||
@@ -236,6 +299,7 @@ const filteredTutors = computed(() =>
   )
 )
 
+// Booking modal functions
 const openBookingModal = tutor => {
   bookingTutor.value = tutor
   showBookingModal.value = true
@@ -260,6 +324,17 @@ const submitBooking = () => {
   closeBookingModal()
 }
 
+// Favorite toggle
+const toggleFavorite = tutor => {
+  if (favorites.value.has(tutor.id)) {
+    favorites.value.delete(tutor.id)
+  } else {
+    favorites.value.add(tutor.id)
+  }
+  localStorage.setItem('favorites', JSON.stringify([...favorites.value]))
+}
+
+// Dashboard computations
 const uniqueTutors = computed(() =>
   new Set(sessions.value.map(s => s.tutor)).size
 )
