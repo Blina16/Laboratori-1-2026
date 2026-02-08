@@ -10,7 +10,7 @@ router.get("/", async (req, res) => {
     const [courses] = await db.query(
       `SELECT c.*, u.name as tutor_name 
        FROM courses c 
-       LEFT JOIN users u ON c.assigned_tutor_id = u.id 
+       LEFT JOIN users u ON c.teacher_id = u.id 
        ORDER BY c.created_at DESC`
     )
     res.json(courses)
@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
 router.get("/teacher/:teacherId", async (req, res) => {
   try {
     const [courses] = await db.query(
-      "SELECT * FROM courses WHERE assigned_tutor_id = ? ORDER BY created_at DESC",
+      "SELECT * FROM courses WHERE teacher_id = ? ORDER BY created_at DESC",
       [req.params.teacherId]
     )
     res.json(courses)
@@ -44,7 +44,7 @@ router.get("/:id", async (req, res) => {
     const [courses] = await db.query(
       `SELECT c.*, u.name as tutor_name 
        FROM courses c 
-       LEFT JOIN users u ON c.assigned_tutor_id = u.id 
+       LEFT JOIN users u ON c.teacher_id = u.id 
        WHERE c.id = ?`,
       [req.params.id]
     )
@@ -64,13 +64,13 @@ router.get("/:id", async (req, res) => {
 // CREATE course
 // =========================
 router.post("/", async (req, res) => {
-  const name = (req.body.name ?? req.body.title ?? "").toString()
+  const title = (req.body.name ?? req.body.title ?? "").toString()
   const description = (req.body.description ?? "").toString()
   const duration = (req.body.duration ?? "").toString()
   const level = (req.body.level ?? "").toString()
   const price = req.body.price ?? 0
 
-  const assignedTutorId =
+  const teacherId =
     req.body.assigned_tutor_id ??
     req.body.assignedTutorId ??
     req.body.teacher_id ??
@@ -79,29 +79,29 @@ router.post("/", async (req, res) => {
     req.body.tutorId ??
     null
 
-  if (!name.trim()) {
-    return res.status(400).json({ message: "Course name is required" })
+  if (!title.trim()) {
+    return res.status(400).json({ message: "Course title is required" })
   }
 
   try {
     const [result] = await db.query(
       `INSERT INTO courses 
-       (name, description, duration, level, price, assigned_tutor_id)
+       (title, description, duration, level, price, teacher_id)
        VALUES (?, ?, ?, ?, ?, ?)`,
       [
-        name.trim(),
+        title.trim(),
         description.trim() || null,
         duration.trim() || null,
         level.trim() || null,
         price,
-        assignedTutorId
+        teacherId
       ]
     )
 
     const [newCourse] = await db.query(
       `SELECT c.*, u.name as tutor_name
        FROM courses c
-       LEFT JOIN users u ON c.assigned_tutor_id = u.id
+       LEFT JOIN users u ON c.teacher_id = u.id
        WHERE c.id = ?`,
       [result.insertId]
     )
@@ -117,13 +117,13 @@ router.post("/", async (req, res) => {
 // UPDATE course
 // =========================
 router.put("/:id", async (req, res) => {
-  const name = (req.body.name ?? req.body.title ?? "").toString()
+  const title = (req.body.name ?? req.body.title ?? "").toString()
   const description = (req.body.description ?? "").toString()
   const duration = (req.body.duration ?? "").toString()
   const level = (req.body.level ?? "").toString()
   const price = req.body.price ?? 0
 
-  const assignedTutorId =
+  const teacherId =
     req.body.assigned_tutor_id ??
     req.body.assignedTutorId ??
     req.body.teacher_id ??
@@ -132,22 +132,22 @@ router.put("/:id", async (req, res) => {
     req.body.tutorId ??
     null
 
-  if (!name.trim()) {
-    return res.status(400).json({ message: "Course name is required" })
+  if (!title.trim()) {
+    return res.status(400).json({ message: "Course title is required" })
   }
 
   try {
     const [result] = await db.query(
       `UPDATE courses 
-       SET name = ?, description = ?, duration = ?, level = ?, price = ?, assigned_tutor_id = ?
+       SET title = ?, description = ?, duration = ?, level = ?, price = ?, teacher_id = ?
        WHERE id = ?`,
       [
-        name.trim(),
+        title.trim(),
         description.trim() || null,
         duration.trim() || null,
         level.trim() || null,
         price,
-        assignedTutorId,
+        teacherId,
         req.params.id
       ]
     )
@@ -159,7 +159,7 @@ router.put("/:id", async (req, res) => {
     const [updatedCourse] = await db.query(
       `SELECT c.*, u.name as tutor_name
        FROM courses c
-       LEFT JOIN users u ON c.assigned_tutor_id = u.id
+       LEFT JOIN users u ON c.teacher_id = u.id
        WHERE c.id = ?`,
       [req.params.id]
     )
