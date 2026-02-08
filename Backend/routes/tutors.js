@@ -62,13 +62,10 @@ const router = express.Router()
      const [tutors] = await db.query(
        `SELECT u.id, u.name, u.email, u.created_at,
                tp.experience, tp.subject, tp.price_per_hour, tp.bio,
-               COUNT(sts.id) as total_sessions,
-               AVG(sr.rating) as average_rating,
-               COUNT(sr.id) as total_reviews
+               COUNT(s.id) as total_sessions
         FROM users u
         LEFT JOIN teacher_profiles tp ON u.id = tp.user_id
-        LEFT JOIN student_tutor_sessions sts ON u.id = sts.tutor_id
-        LEFT JOIN student_reviews sr ON u.id = sr.tutor_id
+        LEFT JOIN sessions s ON u.id = s.teacher_id
         WHERE u.role = 'teacher'
         GROUP BY u.id, u.name, u.email, u.created_at, tp.experience, tp.subject, tp.price_per_hour, tp.bio
         ORDER BY u.created_at DESC`
@@ -80,29 +77,6 @@ const router = express.Router()
    }
  })
 
-router.get("/", async (req, res) => {
-  try {
-    const [tutors] = await db.query(
-      `SELECT u.id, u.name, u.email, u.created_at,
-              tp.experience, tp.subject, tp.price_per_hour, tp.bio,
-              COUNT(sts.id) as total_sessions,
-              AVG(sr.rating) as average_rating,
-              COUNT(sr.id) as total_reviews
-       FROM users u
-       LEFT JOIN teacher_profiles tp ON u.id = tp.user_id
-       LEFT JOIN student_tutor_sessions sts ON u.id = sts.tutor_id
-       LEFT JOIN student_reviews sr ON u.id = sr.tutor_id
-       WHERE u.role = 'teacher'
-       GROUP BY u.id, u.name, u.email, u.created_at, tp.experience, tp.subject, tp.price_per_hour, tp.bio
-       ORDER BY u.created_at DESC`
-    )
-    res.json(tutors)
-  } catch (err) {
-    console.error('Failed to fetch tutors:', err)
-    res.status(500).json({ message: "Failed to fetch tutors", error: err.message })
-  }
-})
-
 // Get single tutor by ID
 router.get("/:id", async (req, res) => {
   const { id } = req.params
@@ -111,13 +85,10 @@ router.get("/:id", async (req, res) => {
     const [tutor] = await db.query(
       `SELECT u.id, u.name, u.email, u.created_at,
               tp.experience, tp.subject, tp.price_per_hour, tp.bio,
-              COUNT(sts.id) as total_sessions,
-              AVG(sr.rating) as average_rating,
-              COUNT(sr.id) as total_reviews
+              COUNT(s.id) as total_sessions
        FROM users u
        LEFT JOIN teacher_profiles tp ON u.id = tp.user_id
-       LEFT JOIN student_tutor_sessions sts ON u.id = sts.tutor_id
-       LEFT JOIN student_reviews sr ON u.id = sr.tutor_id
+       LEFT JOIN sessions s ON u.id = s.teacher_id
        WHERE u.role = 'teacher' AND u.id = ?
        GROUP BY u.id, u.name, u.email, u.created_at, tp.experience, tp.subject, tp.price_per_hour, tp.bio`,
       [id]
@@ -157,11 +128,12 @@ router.post("/", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
+    const fullName = surname ? `${name} ${surname}` : name
 
     // Create user account
     const [userResult] = await db.query(
       "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'teacher')",
-      [name, email, hashedPassword]
+      [fullName, email, hashedPassword]
     )
 
     const userId = userResult.insertId
@@ -176,10 +148,16 @@ router.post("/", async (req, res) => {
     // Fetch created tutor with full details
     const [newTutor] = await db.query(
       `SELECT u.id, u.name, u.email, u.created_at,
-              tp.experience, tp.subject, tp.price_per_hour, tp.bio
+              tp.experience, tp.subject, tp.price_per_hour, tp.bio,
+              COUNT(sts.id) as total_sessions,
+              AVG(sr.rating) as average_rating,
+              COUNT(sr.id) as total_reviews
        FROM users u
        LEFT JOIN teacher_profiles tp ON u.id = tp.user_id
-       WHERE u.id = ?`,
+       LEFT JOIN student_tutor_sessions sts ON u.id = sts.tutor_id
+       LEFT JOIN student_reviews sr ON u.id = sr.tutor_id
+       WHERE u.id = ?
+       GROUP BY u.id, u.name, u.email, u.created_at, tp.experience, tp.subject, tp.price_per_hour, tp.bio`,
       [userId]
     )
 
@@ -209,11 +187,13 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ message: "Tutor not found" })
     }
 
+    const fullName = surname ? `${name} ${surname}` : name
+
     // Update user basic info
     if (name || email) {
       await db.query(
         "UPDATE users SET name = ?, email = ? WHERE id = ?",
-        [name, email, id]
+        [fullName, email, id]
       )
     }
 
@@ -230,10 +210,16 @@ router.put("/:id", async (req, res) => {
     // Fetch updated tutor
     const [updatedTutor] = await db.query(
       `SELECT u.id, u.name, u.email, u.created_at,
-              tp.experience, tp.subject, tp.price_per_hour, tp.bio
+              tp.experience, tp.subject, tp.price_per_hour, tp.bio,
+              COUNT(sts.id) as total_sessions,
+              AVG(sr.rating) as average_rating,
+              COUNT(sr.id) as total_reviews
        FROM users u
        LEFT JOIN teacher_profiles tp ON u.id = tp.user_id
-       WHERE u.id = ?`,
+       LEFT JOIN student_tutor_sessions sts ON u.id = sts.tutor_id
+       LEFT JOIN student_reviews sr ON u.id = sr.tutor_id
+       WHERE u.id = ?
+       GROUP BY u.id, u.name, u.email, u.created_at, tp.experience, tp.subject, tp.price_per_hour, tp.bio`,
       [id]
     )
 

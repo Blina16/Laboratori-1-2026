@@ -71,7 +71,10 @@
             </p>
           </div>
 
-          <button class="w-full btn-primary mt-4">
+          <button 
+            @click="contactTutor(tutor)"
+            class="w-full btn-primary mt-4"
+          >
             Contact Tutor
           </button>
         </div>
@@ -82,6 +85,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import api from '@/services/api'
 
 defineOptions({
@@ -90,6 +94,21 @@ defineOptions({
 
 const tutors = ref([])
 const loading = ref(true)
+const router = useRouter()
+
+const contactTutor = (tutor) => {
+  const token = localStorage.getItem('token')
+  const user = JSON.parse(localStorage.getItem('user'))
+  
+  if (!token || !user) {
+    // Not logged in, redirect to signup
+    router.push('/signup')
+  } else {
+    // Logged in, you can implement contact logic here
+    // For now, you could show a modal or navigate to a contact form
+    alert(`Contact feature for ${tutor.name} ${tutor.surname || ''} will be implemented soon!`)
+  }
+}
 
 const fetchTutors = async () => {
   try {

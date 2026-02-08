@@ -12,6 +12,19 @@
         </div>
         <div class="flex gap-2">
           <button
+            @click="fetchTutors"
+            :disabled="isLoading"
+            class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition disabled:opacity-50 flex items-center gap-2"
+          >
+            <svg v-if="!isLoading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <svg v-else class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {{ isLoading ? 'Loading...' : 'Refresh' }}
+          </button>
+          <button
             @click="testAPI"
             class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition flex items-center gap-2"
           >
@@ -179,20 +192,57 @@ const tutorToDelete = ref(null)
 
 const fetchTutors = async () => {
   try {
-    const response = await api.get('/tutors')
-    tutors.value = response.data.map(teacher => ({
-      ...teacher,
-      // Add mock data for missing fields
-      surname: teacher.name.split(' ').slice(1).join('') || '',
-      email: teacher.email,
-      subject: teacher.subject || 'Not specified',
-      experience: teacher.experience || 0,
-      price: teacher.price_per_hour || 0,
-      students: [],
-      courses: []
-    }))
+    isLoading.value = true
+    console.log('🔍 Fetching tutors from API...')
+    
+    // Add timeout and retry logic
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+    
+    const response = await api.get('/tutors', { 
+      signal: controller.signal 
+    })
+    
+    clearTimeout(timeoutId)
+    console.log('✅ Raw API response:', response.data)
+    
+    tutors.value = response.data.map(teacher => {
+      // Split name into first name and surname
+      const nameParts = teacher.name.split(' ')
+      const firstName = nameParts[0] || ''
+      const surname = nameParts.slice(1).join(' ') || ''
+      
+      return {
+        ...teacher,
+        // Ensure consistent field names
+        surname: surname,
+        email: teacher.email,
+        subject: teacher.subject || 'Not specified',
+        experience: teacher.experience || 0,
+        price: teacher.price_per_hour || 0,
+        students: [],
+        courses: []
+      }
+    })
+    
+    console.log('✅ Processed tutors data:', tutors.value)
   } catch (error) {
-    console.error('Failed to fetch tutors:', error)
+    console.error('❌ Failed to fetch tutors:', error)
+    
+    // Handle different types of errors
+    if (error.name === 'AbortError') {
+      console.log('⏰ Request timed out')
+      alert('Request timed out. Please check if the backend server is running.')
+    } else if (error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
+      console.log('🌐 Network error - backend might not be running')
+      alert('Cannot connect to backend. Please make sure the backend server is running on port 5000.')
+    } else {
+      console.log('❓ Other error:', error.message)
+      alert('Failed to load tutors: ' + (error.response?.data?.message || error.message))
+    }
+    
+    // Set empty array to prevent infinite loading
+    tutors.value = []
   } finally {
     isLoading.value = false
   }
@@ -239,22 +289,41 @@ const handleSave = async (tutorData) => {
   console.log('🔍 handleSave called with:', tutorData);
 
   try {
+    let response;
+    
     if (selectedTutor.value && selectedTutor.value.id) {
       // Update existing tutor
       console.log('📝 Updating tutor:', selectedTutor.value.id);
-      const response = await api.put(`/tutors/${selectedTutor.value.id}`, tutorData)
+      response = await api.put(`/tutors/${selectedTutor.value.id}`, tutorData)
       console.log('✅ Update tutor response:', response.data)
+      alert('Tutor updated successfully!')
     } else {
       // Add new tutor
       console.log('📝 Adding new tutor');
-      const response = await api.post('/tutors', tutorData)
+      response = await api.post('/tutors', tutorData)
       console.log('✅ Add tutor response:', response.data)
+      alert('Tutor added successfully!')
+      
+      // Additional debugging for new tutors
+      if (response.data && response.data.tutor) {
+        console.log('🆕 New tutor details:', response.data.tutor);
+        console.log('🆕 Tutor ID:', response.data.tutor.id);
+      }
     }
-    await fetchTutors() // Refresh list
+    
+    // Force refresh the list
+    console.log('🔄 Refreshing tutor list...');
+    await fetchTutors()
+    
+    // Log the final state
+    console.log('📊 Final tutors count:', tutors.value.length);
+    console.log('📊 Final tutors list:', tutors.value);
+    
     closeModal()
   } catch (error) {
     console.error('❌ Failed to save tutor:', error.response?.data || error.message)
-    alert('Failed to save tutor: ' + (error.response?.data?.message || error.message))
+    const errorMessage = error.response?.data?.message || error.message
+    alert('Failed to save tutor: ' + errorMessage)
   }
 }
 

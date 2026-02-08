@@ -37,6 +37,12 @@ const router = createRouter({
       meta: { requiresGuest: true },
     },
     {
+      path: '/signup',
+      name: 'SignUp',
+      component: () => import('../views/SignUpView.vue'),
+      meta: { requiresGuest: true },
+    },
+    {
       path: '/admin-signup',
       name: 'AdminSignUp',
       component: () => import('../views/AdminSignUpView.vue'),
