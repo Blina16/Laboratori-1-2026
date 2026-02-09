@@ -113,7 +113,6 @@
           </div>
         </div>
 
-        <!-- Quick Actions -->
         <div class="space-y-6">
           <!-- Quick Actions Card -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-100">
