@@ -21,7 +21,6 @@
             />
           </div>
 
-          <!-- Email -->
           <div>
             <label class="block text-sm font-medium mb-2">Email</label>
             <input
