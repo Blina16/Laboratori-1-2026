@@ -21,7 +21,6 @@
             />
           </div>
 
-          <!-- Password -->
           <div>
             <label class="block text-sm font-medium mb-2">Password</label>
             <input
