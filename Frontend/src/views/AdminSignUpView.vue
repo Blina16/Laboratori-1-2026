@@ -8,7 +8,6 @@
         <p class="text-sm text-red-600 mt-2">⚠️ Requires admin authorization key</p>
       </div>
 
-      <!-- Card -->
       <div class="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
         <form @submit.prevent="handleAdminSignUp" class="space-y-5">
 
@@ -121,7 +120,7 @@
             Sign in
           </router-link>
         </p>
-        
+
         <!-- Regular Signup -->
         <p class="mt-4 text-center text-sm text-gray-600">
           Not an admin?
