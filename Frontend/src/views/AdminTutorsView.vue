@@ -174,8 +174,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import api from '@/services/api'
+import { ref, onMounted, computed } from 'vue'
+import { useTutorsStore } from '@/stores/tutors'
 import AdminSidebar from '../components/AdminSidebar.vue'
 import TutorModal from '../components/TutorModal.vue'
 
@@ -183,68 +183,26 @@ defineOptions({
   name: 'AdminTutorsView'
 })
 
-const tutors = ref([])
-const isLoading = ref(true)
+// Store
+const tutorsStore = useTutorsStore()
+
+// Reactive state
 const showModal = ref(false)
 const showDeleteModal = ref(false)
 const selectedTutor = ref(null)
 const tutorToDelete = ref(null)
 
+// Computed properties
+const tutors = computed(() => tutorsStore.tutors)
+const isLoading = computed(() => tutorsStore.isLoading)
+
+// Methods
 const fetchTutors = async () => {
   try {
-    isLoading.value = true
-    console.log('🔍 Fetching tutors from API...')
-
-    // Add timeout and retry logic
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
-
-    const response = await api.get('/tutors', {
-      signal: controller.signal
-    })
-
-    clearTimeout(timeoutId)
-    console.log('✅ Raw API response:', response.data)
-
-    tutors.value = response.data.map(teacher => {
-      // Split name into first name and surname
-      const nameParts = teacher.name.split(' ')
-      const firstName = nameParts[0] || ''
-      const surname = nameParts.slice(1).join(' ') || ''
-
-      return {
-        ...teacher,
-        // Ensure consistent field names
-        surname: surname,
-        email: teacher.email,
-        subject: teacher.subject || 'Not specified',
-        experience: teacher.experience || 0,
-        price: teacher.price_per_hour || 0,
-        students: [],
-        courses: []
-      }
-    })
-
-    console.log('✅ Processed tutors data:', tutors.value)
+    await tutorsStore.fetchTutors()
   } catch (error) {
-    console.error('❌ Failed to fetch tutors:', error)
-
-    // Handle different types of errors
-    if (error.name === 'AbortError') {
-      console.log('⏰ Request timed out')
-      alert('Request timed out. Please check if the backend server is running.')
-    } else if (error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
-      console.log('🌐 Network error - backend might not be running')
-      alert('Cannot connect to backend. Please make sure the backend server is running on port 5000.')
-    } else {
-      console.log('❓ Other error:', error.message)
-      alert('Failed to load tutors: ' + (error.response?.data?.message || error.message))
-    }
-
-    // Set empty array to prevent infinite loading
-    tutors.value = []
-  } finally {
-    isLoading.value = false
+    console.error('Failed to fetch tutors:', error)
+    alert('Failed to load tutors: ' + (error.response?.data?.message || error.message))
   }
 }
 
@@ -254,13 +212,15 @@ const testAPI = async () => {
   try {
     // Test basic connectivity
     console.log('1. Testing basic connectivity...');
-    const response = await api.get('/test');
-    console.log('✅ Basic connectivity test:', response.data);
+    const response = await fetch('/api/test');
+    const data = await response.json();
+    console.log('✅ Basic connectivity test:', data);
 
     // Test teachers endpoint
-    console.log('2. Testing teachers endpoint...');
-    const teachersResponse = await api.get('/tutors');
-    console.log('✅ Teachers endpoint test:', teachersResponse.data);
+    console.log('2. Testing tutors endpoint...');
+    const tutorsResponse = await fetch('/api/tutors');
+    const tutorsData = await tutorsResponse.json();
+    console.log('✅ Tutors endpoint test:', tutorsData);
 
     alert('✅ API is working! Check console for details.');
   } catch (error) {
@@ -289,35 +249,17 @@ const handleSave = async (tutorData) => {
   console.log('🔍 handleSave called with:', tutorData);
 
   try {
-    let response;
-
     if (selectedTutor.value && selectedTutor.value.id) {
       // Update existing tutor
       console.log('📝 Updating tutor:', selectedTutor.value.id);
-      response = await api.put(`/tutors/${selectedTutor.value.id}`, tutorData)
-      console.log('✅ Update tutor response:', response.data)
+      await tutorsStore.updateTutor(selectedTutor.value.id, tutorData)
       alert('Tutor updated successfully!')
     } else {
       // Add new tutor
       console.log('📝 Adding new tutor');
-      response = await api.post('/tutors', tutorData)
-      console.log('✅ Add tutor response:', response.data)
+      await tutorsStore.addTutor(tutorData)
       alert('Tutor added successfully!')
-
-      // Additional debugging for new tutors
-      if (response.data && response.data.tutor) {
-        console.log('🆕 New tutor details:', response.data.tutor);
-        console.log('🆕 Tutor ID:', response.data.tutor.id);
-      }
     }
-
-    // Force refresh the list
-    console.log('🔄 Refreshing tutor list...');
-    await fetchTutors()
-
-    // Log the final state
-    console.log('📊 Final tutors count:', tutors.value.length);
-    console.log('📊 Final tutors list:', tutors.value);
 
     closeModal()
   } catch (error) {
@@ -335,15 +277,21 @@ const confirmDelete = (tutor) => {
 const handleDelete = async () => {
   try {
     if (tutorToDelete.value) {
-      // Delete tutor (you'd need to implement DELETE endpoint)
-      const response = await api.delete(`/tutors/${tutorToDelete.value.id}`)
-      console.log('Delete tutor:', response.data)
-      await fetchTutors() // Refresh list
+      console.log('🗑️ Deleting tutor:', tutorToDelete.value.id);
+      
+      await tutorsStore.deleteTutor(tutorToDelete.value.id)
+      
+      // Show success message
+      alert('Tutor deleted successfully!')
+      
+      // Close modal and clear selection
       showDeleteModal.value = false
       tutorToDelete.value = null
     }
   } catch (error) {
-    console.error('Failed to delete tutor:', error)
+    console.error('❌ Failed to delete tutor:', error.response?.data || error.message)
+    const errorMessage = error.response?.data?.message || error.message
+    alert('Failed to delete tutor: ' + errorMessage)
   }
 }
 

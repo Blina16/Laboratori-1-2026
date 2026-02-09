@@ -117,6 +117,12 @@ const router = createRouter({
       meta: { requiresAdmin: true },
     },
     {
+      path: '/admin/payments',
+      name: 'AdminPayments',
+      component: () => import('../views/AdminPaymentsView.vue'),
+      meta: { requiresAdmin: true },
+    },
+    {
       path: '/admin/grades',
       name: 'AdminGrades',
       component: () => import('../views/AdminGradesView.vue'),

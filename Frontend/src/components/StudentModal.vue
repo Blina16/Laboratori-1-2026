@@ -169,14 +169,43 @@ watch(() => props.student, (newStudent) => {
 
 
 const handleSubmit = () => {
+  console.log('🔍 Student form submission triggered');
+  console.log('📝 Form data:', form.value);
+  
+  // Check if required fields are filled
+  if (!form.value.name.trim()) {
+    console.log('❌ Missing name');
+    alert('Please fill in the student name');
+    return;
+  }
+  
+  if (!form.value.email.trim()) {
+    console.log('❌ Missing email');
+    alert('Please fill in the email address');
+    return;
+  }
+  
+  if (!form.value.age || form.value.age < 1 || form.value.age > 120) {
+    console.log('❌ Invalid age');
+    alert('Please enter a valid age (1-120)');
+    return;
+  }
+  
+  if (!form.value.location.trim()) {
+    console.log('❌ Missing location');
+    alert('Please fill in the location');
+    return;
+  }
+  
   const studentData = {
     name: form.value.name.trim(),
     surname: form.value.surname.trim(),
-    age: form.value.age,
+    age: Number(form.value.age),
     location: form.value.location.trim(),
     email: form.value.email.trim()
   }
   
+  console.log('✅ Emitting student data:', studentData);
   emit('save', studentData)
 }
 </script>

@@ -8,7 +8,8 @@ const courseRoutes = require("./routes/courses");
 const sessionRoutes = require("./routes/sessions");
 const studentRoutes = require("./routes/students");
 const gradeRoutes = require("./routes/grades");
-const bookingroutes = require("./routes/bookings")
+const bookingroutes = require("./routes/bookings");
+const paymentRoutes = require("./routes/payments");
 
 try {
   const availabilityRoutes = require("./routes/availability");
@@ -49,7 +50,8 @@ try {
   app.use("/api/students", studentRoutes);
   app.use("/api/grades", gradeRoutes);
   app.use("/api/availability", availabilityRoutes);
-  app.use("/api/bookings", bookingroutes)
+  app.use("/api/bookings", bookingroutes);
+  app.use("/api/payments", paymentRoutes);
 
   app.listen(5000, () => {
     console.log("🚀 Server running on http://localhost:5000");
@@ -65,6 +67,7 @@ try {
     console.log("   GET  /api/grades/*");
     console.log("   GET  /api/availability/*");
     console.log("   GET  /api/bookings/*");
+    console.log("   GET  /api/payments/*");
   });
 } catch (error) {
   console.error('❌ Error loading availability routes:', error);

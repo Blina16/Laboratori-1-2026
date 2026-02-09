@@ -28,7 +28,7 @@
           </label>
           <input
             id="name"
-            v-model="form.name"
+            v-model="form.title"
             type="text"
             required
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
@@ -104,16 +104,16 @@
             </label>
             <select
               id="tutor"
-              v-model="form.tutor"
+              v-model="form.teacher_id"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
             >
               <option value="">Select a tutor (optional)</option>
               <option
                 v-for="tutor in tutors"
                 :key="tutor.id"
-                :value="`${tutor.name} ${tutor.surname}`"
+                :value="tutor.id"
               >
-                {{ tutor.name }} {{ tutor.surname }}
+                {{ tutor.name }} {{ tutor.surname || '' }}
               </option>
             </select>
           </div>
@@ -201,7 +201,11 @@ const isEditMode = computed(() => !!props.course)
 const form = ref({
   title: '',
   description: '',
-  teacher_id: ''
+  duration: '',
+  level: '',
+  price: 0,
+  teacher_id: '',
+  students: []
 })
 
 // Initialize form when course prop changes
@@ -210,13 +214,21 @@ watch(() => props.course, (newCourse) => {
     form.value = {
       title: newCourse.title || newCourse.name || '',
       description: newCourse.description || '',
-      teacher_id: newCourse.teacher_id || ''
+      duration: newCourse.duration || '',
+      level: newCourse.level || '',
+      price: newCourse.price || 0,
+      teacher_id: newCourse.teacher_id || '',
+      students: newCourse.students ? [...newCourse.students] : []
     }
   } else {
     form.value = {
       title: '',
       description: '',
-      teacher_id: ''
+      duration: '',
+      level: '',
+      price: 0,
+      teacher_id: '',
+      students: []
     }
   }
 }, { immediate: true })
@@ -230,12 +242,28 @@ const removeStudent = (index) => {
 }
 
 const handleSubmit = () => {
+  console.log('🔍 Course form submission triggered');
+  console.log('📝 Form data:', form.value);
+  
+  // Check if required fields are filled
+  if (!form.value.title.trim()) {
+    console.log('❌ Missing required title');
+    alert('Please fill in the course title');
+    return;
+  }
+  
+  // Filter out empty students
   const courseData = {
     title: form.value.title.trim(),
     description: form.value.description.trim(),
-    teacher_id: form.value.teacher_id ? Number(form.value.teacher_id) : null
+    duration: form.value.duration.trim(),
+    level: form.value.level,
+    price: form.value.price,
+    teacher_id: form.value.teacher_id ? Number(form.value.teacher_id) : null,
+    students: form.value.students.filter(s => s.trim() !== '')
   }
   
+  console.log('✅ Emitting course data:', courseData);
   emit('save', courseData)
 }
 </script>

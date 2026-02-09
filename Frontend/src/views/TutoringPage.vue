@@ -6,7 +6,7 @@
         <h2 class="text-xl font-bold text-gray-900">Available Tutors</h2>
         <p class="text-sm text-gray-600 mt-1">Find your perfect tutor</p>
       </div>
-      
+
       <!-- Search Bar -->
       <div class="p-4 border-b border-gray-200">
         <div class="relative">
@@ -97,7 +97,7 @@
           <!-- Booking Section -->
           <div class="border-t border-gray-200 pt-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Book a Session</h3>
-            
+
             <div v-if="!selectedTeacher.available" class="text-center py-8">
               <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -110,7 +110,7 @@
               <!-- Booking Form -->
               <div class="bg-gray-50 rounded-lg p-6">
                 <h4 class="font-medium text-gray-900 mb-4">Schedule Your Session</h4>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
@@ -121,7 +121,7 @@
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     />
                   </div>
-                  
+
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
                     <input
@@ -130,7 +130,7 @@
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     />
                   </div>
-                  
+
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
                     <select
@@ -143,7 +143,7 @@
                       <option value="120">120 minutes</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
                     <input
@@ -154,7 +154,7 @@
                     />
                   </div>
                 </div>
-                
+
                 <div class="mt-4">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Notes (optional)</label>
                   <textarea
@@ -164,13 +164,13 @@
                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                   ></textarea>
                 </div>
-                
+
                 <div class="mt-6 flex items-center justify-between">
                   <div class="text-sm text-gray-600">
                     <span class="font-medium">Estimated cost:</span>
                     ${{ calculateCost() }}
                   </div>
-                  
+
                   <button
                     @click="bookDirectSession"
                     :disabled="!canBook()"
@@ -221,9 +221,9 @@ const bookingForm = ref({
 
 const filteredTeachers = computed(() => {
   if (!searchQuery.value) return teachers.value
-  
+
   const query = searchQuery.value.toLowerCase()
-  return teachers.value.filter(teacher => 
+  return teachers.value.filter(teacher =>
     teacher.name?.toLowerCase().includes(query) ||
     teacher.subject?.toLowerCase().includes(query) ||
     teacher.bio?.toLowerCase().includes(query)
@@ -277,15 +277,15 @@ const calculateCost = () => {
 }
 
 const canBook = () => {
-  return selectedTeacher.value?.available && 
-         bookingForm.value.date && 
-         bookingForm.value.time && 
+  return selectedTeacher.value?.available &&
+         bookingForm.value.date &&
+         bookingForm.value.time &&
          !isBooking.value
 }
 
 const bookDirectSession = async () => {
   if (!canBook()) return
-  
+
   try {
     // Get current user from localStorage
     const userData = localStorage.getItem('user')
@@ -293,13 +293,13 @@ const bookDirectSession = async () => {
       alert('Please log in to book sessions')
       return
     }
-    
+
     const user = JSON.parse(userData)
     if (user.role !== 'student') {
       alert('Only students can book sessions')
       return
     }
-    
+
     // Confirm booking
     const confirmed = confirm(
       `Book session with ${selectedTeacher.value.name}?\n` +
@@ -308,11 +308,11 @@ const bookDirectSession = async () => {
       `Duration: ${bookingForm.value.duration} minutes\n` +
       `Cost: $${calculateCost()}`
     )
-    
+
     if (!confirmed) return
-    
+
     isBooking.value = true
-    
+
     // Create booking data
     const bookingData = {
       teacher_id: selectedTeacher.value.id,
@@ -323,14 +323,14 @@ const bookDirectSession = async () => {
       price: calculateCost(),
       notes: bookingForm.value.notes
     }
-    
+
     console.log('Creating direct booking:', bookingData)
-    
+
     // Make booking request
     const response = await api.post('/sessions', bookingData)
-    
+
     alert('✅ Session booked successfully!')
-    
+
     // Reset form
     bookingForm.value = {
       date: '',
@@ -339,7 +339,7 @@ const bookDirectSession = async () => {
       subject: selectedTeacher.value.subject || '',
       notes: ''
     }
-    
+
   } catch (error) {
     console.error('Failed to book session:', error)
     alert('❌ Failed to book session: ' + (error.response?.data?.error || error.message))

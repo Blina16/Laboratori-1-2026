@@ -142,8 +142,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import api from '../services/api'
+import { ref, onMounted, computed } from 'vue'
+import { useStudentsStore } from '@/stores/students'
+import { useTutorsStore } from '@/stores/tutors'
 import StudentModal from '../components/StudentModal.vue'
 import AdminSidebar from '../components/AdminSidebar.vue'
 
@@ -151,34 +152,41 @@ defineOptions({
   name: 'AdminStudentsView'
 })
 
-const students = ref([])
-const tutors = ref([])
+// Stores
+const studentsStore = useStudentsStore()
+const tutorsStore = useTutorsStore()
+
+// Reactive state
 const showModal = ref(false)
 const showDeleteModal = ref(false)
 const selectedStudent = ref(null)
 const studentToDelete = ref(null)
 
+// Computed properties
+const students = computed(() => studentsStore.students)
+const tutors = computed(() => tutorsStore.tutors)
+
+// Methods
 const fetchStudents = async () => {
   try {
-    const response = await api.get('/students')
-    students.value = response.data
+    await studentsStore.fetchStudents()
   } catch (error) {
     console.error('Failed to fetch students:', error)
+    alert('Failed to load students: ' + (error.response?.data?.message || error.message))
   }
 }
 
 const fetchTutors = async () => {
   try {
-    const response = await api.get('/tutors')
-    tutors.value = response.data
+    await tutorsStore.fetchTutors()
   } catch (error) {
     console.error('Failed to fetch tutors:', error)
+    alert('Failed to load tutors: ' + (error.response?.data?.message || error.message))
   }
 }
 
-onMounted(() => {
-  fetchStudents()
-  fetchTutors()
+onMounted(async () => {
+  await Promise.all([fetchStudents(), fetchTutors()])
 })
 
 const openAddModal = () => {
@@ -198,18 +206,25 @@ const closeModal = () => {
 
 const handleSave = async (studentData) => {
   try {
+    console.log('🔍 handleSave called with:', studentData);
+
     if (selectedStudent.value && selectedStudent.value.id) {
       // Update existing student
-      await api.put(`/students/${selectedStudent.value.id}`, studentData)
+      console.log('📝 Updating student:', selectedStudent.value.id);
+      await studentsStore.updateStudent(selectedStudent.value.id, studentData)
+      alert('Student updated successfully!')
     } else {
       // Add new student
-      await api.post('/students', studentData)
+      console.log('📝 Adding new student');
+      await studentsStore.addStudent(studentData)
+      alert('Student added successfully!')
     }
-    await fetchStudents()
+
     closeModal()
   } catch (error) {
-    console.error('Failed to save student:', error)
-    alert('Failed to save student. Please try again.')
+    console.error('❌ Failed to save student:', error.response?.data || error.message)
+    const errorMessage = error.response?.data?.message || error.message
+    alert('Failed to save student: ' + errorMessage)
   }
 }
 
@@ -221,14 +236,21 @@ const confirmDelete = (student) => {
 const handleDelete = async () => {
   try {
     if (studentToDelete.value) {
-      await api.delete(`/students/${studentToDelete.value.id}`)
-      await fetchStudents()
+      console.log('🗑️ Deleting student:', studentToDelete.value.id);
+      
+      await studentsStore.deleteStudent(studentToDelete.value.id)
+      
+      // Show success message
+      alert('Student deleted successfully!')
+      
+      // Close modal and clear selection
       showDeleteModal.value = false
       studentToDelete.value = null
     }
   } catch (error) {
-    console.error('Failed to delete student:', error)
-    alert('Failed to delete student. Please try again.')
+    console.error('❌ Failed to delete student:', error.response?.data || error.message)
+    const errorMessage = error.response?.data?.message || error.message
+    alert('Failed to delete student: ' + errorMessage)
   }
 }
 </script>

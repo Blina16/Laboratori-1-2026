@@ -192,8 +192,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import api from '../services/api'
+import { ref, onMounted, computed } from 'vue'
+import { useCoursesStore } from '@/stores/courses'
+import { useTutorsStore } from '@/stores/tutors'
 import CourseModal from '../components/CourseModal.vue'
 import AdminSidebar from '../components/AdminSidebar.vue'
 
@@ -201,42 +202,36 @@ defineOptions({
   name: 'AdminCoursesView'
 })
 
+// Stores
+const coursesStore = useCoursesStore()
+const tutorsStore = useTutorsStore()
+
+// Reactive state
 const showModal = ref(false)
 const showDeleteModal = ref(false)
 const selectedCourse = ref(null)
 const courseToDelete = ref(null)
 
-const courses = ref([])
-const tutors = ref([])
+// Computed properties
+const courses = computed(() => coursesStore.courses)
+const tutors = computed(() => tutorsStore.tutors)
 
+// Methods
 const fetchCourses = async () => {
   try {
-    const res = await api.get('/courses')
-    courses.value = (res.data || []).map(c => ({
-      id: c.id,
-      name: c.name,
-      description: c.description || '',
-      duration: c.duration || '',
-      level: c.level || '',
-      price: typeof c.price === 'number' ? c.price : (c.price ? Number(c.price) : 0),
-      tutor: c.tutor_name || '',
-      teacher_id: c.assigned_tutor_id,
-      students: c.students || []
-    }))
+    await coursesStore.fetchCourses()
   } catch (error) {
     console.error('Failed to fetch courses:', error)
+    alert('Failed to load courses: ' + (error.response?.data?.message || error.message))
   }
 }
 
 const fetchTutors = async () => {
   try {
-    const res = await api.get('/users/teachers')
-    tutors.value = (res.data || []).map(t => ({
-      ...t,
-      surname: t.surname || ''
-    }))
+    await tutorsStore.fetchTutors()
   } catch (error) {
     console.error('Failed to fetch tutors:', error)
+    alert('Failed to load tutors: ' + (error.response?.data?.message || error.message))
   }
 }
 
@@ -261,26 +256,25 @@ const closeModal = () => {
 
 const handleSave = async (courseData) => {
   try {
-    const payload = {
-      name: courseData.title ?? courseData.name,
-      description: courseData.description,
-      duration: courseData.duration,
-      level: courseData.level,
-      price: courseData.price,
-      assigned_tutor_id: courseData.teacher_id ?? courseData.teacherId
-    }
+    console.log('🔍 handleSave called with:', courseData);
 
     if (selectedCourse.value && selectedCourse.value.id) {
-      await api.put(`/courses/${selectedCourse.value.id}`, payload)
+      // Update existing course
+      console.log('📝 Updating course:', selectedCourse.value.id);
+      await coursesStore.updateCourse(selectedCourse.value.id, courseData)
+      alert('Course updated successfully!')
     } else {
-      await api.post('/courses', payload)
+      // Add new course
+      console.log('📝 Adding new course');
+      await coursesStore.addCourse(courseData)
+      alert('Course added successfully!')
     }
 
-    await fetchCourses()
     closeModal()
   } catch (error) {
-    console.error('Failed to save course:', error)
-    alert('Failed to save course')
+    console.error('❌ Failed to save course:', error.response?.data || error.message)
+    const errorMessage = error.response?.data?.message || error.message
+    alert('Failed to save course: ' + errorMessage)
   }
 }
 
@@ -290,16 +284,23 @@ const confirmDelete = (course) => {
 }
 
 const handleDelete = async () => {
-  if (!courseToDelete.value) return
-
   try {
-    await api.delete(`/courses/${courseToDelete.value.id}`)
-    await fetchCourses()
-    showDeleteModal.value = false
-    courseToDelete.value = null
+    if (courseToDelete.value) {
+      console.log('🗑️ Deleting course:', courseToDelete.value.id);
+      
+      await coursesStore.deleteCourse(courseToDelete.value.id)
+      
+      // Show success message
+      alert('Course deleted successfully!')
+      
+      // Close modal and clear selection
+      showDeleteModal.value = false
+      courseToDelete.value = null
+    }
   } catch (error) {
-    console.error('Failed to delete course:', error)
-    alert('Failed to delete course')
+    console.error('❌ Failed to delete course:', error.response?.data || error.message)
+    const errorMessage = error.response?.data?.message || error.message
+    alert('Failed to delete course: ' + errorMessage)
   }
 }
 </script>

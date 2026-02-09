@@ -71,7 +71,7 @@
             </p>
           </div>
 
-          <button 
+          <button
             @click="contactTutor(tutor)"
             class="w-full btn-primary mt-4"
           >
@@ -99,7 +99,7 @@ const router = useRouter()
 const contactTutor = (tutor) => {
   const token = localStorage.getItem('token')
   const user = JSON.parse(localStorage.getItem('user'))
-  
+
   if (!token || !user) {
     // Not logged in, redirect to signup
     router.push('/signup')

@@ -108,7 +108,30 @@ router.post("/", async (req, res) => {
 
     res.status(201).json(newCourse[0])
   } catch (err) {
-    console.error(err)
+    console.error('Failed to create course:', err)
+    
+    // Handle specific database errors - exact same as tutors
+    if (err.code === 'ER_NO_SUCH_TABLE') {
+      return res.status(500).json({ 
+        message: "Database tables not found. Please run database initialization.", 
+        error: err.message 
+      })
+    }
+    
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ 
+        message: "A course with this title already exists", 
+        error: err.message 
+      })
+    }
+    
+    if (err.code === 'ER_NO_REFERENCED_ROW_2') {
+      return res.status(500).json({ 
+        message: "Database constraint error. Please check database setup.", 
+        error: err.message 
+      })
+    }
+    
     res.status(500).json({ message: "Failed to create course", error: err.message })
   }
 })
