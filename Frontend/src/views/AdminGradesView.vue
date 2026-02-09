@@ -237,7 +237,7 @@
       @close="closeModal"
       @save="handleSave"
     />
-    
+
     <!-- Delete Confirmation Modal -->
     <div
       v-if="showDeleteModal"
@@ -327,30 +327,30 @@ const uniqueSubjects = computed(() => {
 
 const filteredGrades = computed(() => {
   let filtered = [...grades.value]
-  
+
   if (filters.value.student_id) {
     filtered = filtered.filter(grade => grade.student_id == filters.value.student_id)
   }
-  
+
   if (filters.value.subject) {
     filtered = filtered.filter(grade => grade.subject === filters.value.subject)
   }
-  
+
   return filtered
 })
 
 const sortGrades = () => {
   const [field, order] = sortBy.value.split('-')
-  
+
   filteredGrades.value.sort((a, b) => {
     let aValue = a[field]
     let bValue = b[field]
-    
+
     if (field === 'date') {
       aValue = new Date(aValue || '1970-01-01')
       bValue = new Date(bValue || '1970-01-01')
     }
-    
+
     if (order === 'asc') {
       return aValue > bValue ? 1 : -1
     } else {
