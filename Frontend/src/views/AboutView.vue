@@ -19,12 +19,12 @@
           <div>
             <h2 class="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
             <p class="text-lg text-gray-600 mb-6">
-              At TutorRemote, we believe that quality education should be accessible to everyone, everywhere. 
-              Our mission is to bridge the gap between passionate educators and motivated students through 
+              At TutorRemote, we believe that quality education should be accessible to everyone, everywhere.
+              Our mission is to bridge the gap between passionate educators and motivated students through
               innovative technology and personalized learning experiences.
             </p>
             <p class="text-lg text-gray-600 mb-6">
-              We strive to create a global learning community where every student can find the perfect 
+              We strive to create a global learning community where every student can find the perfect
               tutor to help them achieve their academic goals and unlock their full potential.
             </p>
           </div>
@@ -59,19 +59,19 @@
           <div class="order-2 lg:order-1">
             <h2 class="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
             <p class="text-lg text-gray-600 mb-6">
-              Founded in 2024, TutorRemote was born from a simple observation: traditional tutoring methods 
-              weren't keeping up with the digital age. Students needed flexible, accessible, and personalized 
+              Founded in 2024, TutorRemote was born from a simple observation: traditional tutoring methods
+              weren't keeping up with the digital age. Students needed flexible, accessible, and personalized
               learning solutions that could adapt to their busy lives.
             </p>
             <p class="text-lg text-gray-600 mb-6">
-              What started as a small team of passionate educators has grown into a global platform connecting 
-              thousands of students with expert tutors across dozens of subjects. We've helped students improve 
+              What started as a small team of passionate educators has grown into a global platform connecting
+              thousands of students with expert tutors across dozens of subjects. We've helped students improve
               their grades, gain confidence, and develop a love for learning.
             </p>
           </div>
           <div class="order-1 lg:order-2">
-            <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
-                 alt="Students learning together" 
+            <img src=""
+                 alt="Students learning together"
                  class="rounded-xl shadow-lg w-full">
           </div>
         </div>
@@ -87,7 +87,7 @@
             The principles that guide everything we do
           </p>
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div class="text-center p-8">
             <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -97,11 +97,11 @@
             </div>
             <h3 class="text-xl font-semibold text-gray-900 mb-4">Excellence</h3>
             <p class="text-gray-600">
-              We maintain the highest standards in tutoring quality, ensuring every student receives 
+              We maintain the highest standards in tutoring quality, ensuring every student receives
               exceptional educational support.
             </p>
           </div>
-          
+
           <div class="text-center p-8">
             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,11 +110,11 @@
             </div>
             <h3 class="text-xl font-semibold text-gray-900 mb-4">Accessibility</h3>
             <p class="text-gray-600">
-              We believe quality education should be accessible to everyone, regardless of location, 
+              We believe quality education should be accessible to everyone, regardless of location,
               background, or financial situation.
             </p>
           </div>
-          
+
           <div class="text-center p-8">
             <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,7 +123,7 @@
             </div>
             <h3 class="text-xl font-semibold text-gray-900 mb-4">Innovation</h3>
             <p class="text-gray-600">
-              We continuously evolve our platform and teaching methods to leverage the latest 
+              We continuously evolve our platform and teaching methods to leverage the latest
               educational technology and research.
             </p>
           </div>
@@ -140,7 +140,7 @@
             The passionate people behind TutorRemote
           </p>
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div class="bg-white rounded-xl shadow-lg p-6 text-center">
             <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
@@ -152,7 +152,7 @@
               Former educator with 15+ years of experience in educational technology.
             </p>
           </div>
-          
+
           <div class="bg-white rounded-xl shadow-lg p-6 text-center">
             <div class="w-24 h-24 bg-gradient-to-br from-green-500 to-teal-600 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
               JS
@@ -163,7 +163,7 @@
               Tech enthusiast focused on building scalable educational platforms.
             </p>
           </div>
-          
+
           <div class="bg-white rounded-xl shadow-lg p-6 text-center">
             <div class="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
               SJ
