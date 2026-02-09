@@ -161,6 +161,16 @@
                     </svg>
                     <span class="font-medium">Get Support</span>
                   </router-link>
+                  <router-link
+                    to="/admin/tutors"
+                    class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition text-gray-700"
+                  >
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="font-medium">Admin Panel</span>
+                  </router-link>
                 </div>
               </div>
             </div>
@@ -206,18 +216,18 @@ const fetchAdminData = async () => {
       api.get('/api/courses'),
       api.get('/api/users/recent-users')
     ])
-    
+
     const userStats = statsRes.data
     const sessions = sessionsRes.data
     const courses = coursesRes.data
     const users = usersRes.data
-    
+
     // Calculate stats
     const totalSessions = sessions.length
     const upcomingSessions = sessions.filter(s => s.status === 'scheduled').length
     const completedSessions = sessions.filter(s => s.status === 'completed').length
     const completionRate = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0
-    
+
     stats.value = {
       totalSessions,
       activeTutors: userStats.teachers,
@@ -225,7 +235,7 @@ const fetchAdminData = async () => {
       completionRate,
       totalCourses: courses.length
     }
-    
+
     // Format upcoming sessions
     upcomingSessions.value = sessions
       .filter(s => s.status === 'scheduled')
@@ -238,10 +248,10 @@ const fetchAdminData = async () => {
         date: new Date(session.scheduled_at).toLocaleDateString(),
         time: new Date(session.scheduled_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
       }))
-    
+
     // Format recent users
     recentUsers.value = users.slice(0, 5)
-    
+
   } catch (error) {
     console.error('Failed to fetch admin data:', error)
     // Set default values on error
